@@ -67,7 +67,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
     analysisManager->FillNtupleDColumn(ntupleID, 1, ftime[i]);
     analysisManager->FillNtupleDColumn(ntupleID, 2, fPhi[i]);
     analysisManager->FillNtupleDColumn(ntupleID, 3, fTheta[i]);
-    analysisManager->FillNtupleSColumn(ntupleID, 5, fprocess[i]);
+    // analysisManager->FillNtupleSColumn(ntupleID, 5, fprocess[i]);
     analysisManager->AddNtupleRow(ntupleID);
 
     // G4int nnumber=0;

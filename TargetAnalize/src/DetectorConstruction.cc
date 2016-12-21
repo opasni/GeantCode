@@ -89,8 +89,8 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 {
 
   G4Material* defaultMaterial = G4Material::GetMaterial("Galactic");
-  //G4Material* lH2 = G4Material::GetMaterial("H2liquid");
-  G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
+  G4Material* lH2 = G4Material::GetMaterial("H2liquid");
+  // G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
   // G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
   // G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
   G4Material* tarwall_mat = G4Material::GetMaterial("Galactic");

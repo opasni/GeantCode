@@ -6,7 +6,7 @@
 #include "G4StoppingPhysics.hh"
 #include "G4HadronPhysicsQGSP_BERT.hh"
 #include "G4HadronElasticPhysics.hh"
-#include "G4EmLivermorePhysics.hh"
+#include "EmLivermorePhysics.hh"
 
 #include "MyPhysicsList.hh"
 
@@ -37,7 +37,7 @@ MyPhysicsList::MyPhysicsList()
 
   // Particles
   fParticleList = new G4DecayPhysics("decays");
-  fEmPhysicsList = new G4EmLivermorePhysics();
+  fEmPhysicsList = new EmLivermorePhysics();
   //fEmPhysicsList = new G4EmStandardPhysics();
   fEmExPhysicsList = new G4EmExtraPhysics();
   fIonPhysicsList = new G4IonPhysics();
