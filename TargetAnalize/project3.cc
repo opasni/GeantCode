@@ -41,31 +41,37 @@ int main(int argc,char** argv)
   //my Verbose output class
   G4VSteppingVerbose::SetInstance(new SteppingVerbose);
   G4RunManager* runManager = new G4RunManager;
-#endif 
-G4double thickness = 10;
-//G4cin >> thickness;
+#endif
+  G4String targetwallmat, bremmstralung;
+  G4cout << "Do you want target wall?" << G4endl;
+  G4cin >> targetwallmat;
+  G4cout << "Target cell Material set to: " << targetwallmat << G4endl;
+  G4cout << "Bremmstralung on?" << G4endl;
+  G4cin >> bremmstralung;
+  G4cout << "Bremmstralung set to: " << bremmstralung << G4endl;
   // Set mandatory initialization classes
-  DetectorConstruction* detConstruction = new DetectorConstruction(thickness);
+  DetectorConstruction* detConstruction = new DetectorConstruction(targetwallmat);
+  // Set mandatory initialization classes
   runManager->SetUserInitialization(detConstruction);
 
   // G4PhysListFactory factory;
   G4VModularPhysicsList* phys = 0;
 
 
-  phys = new MyPhysicsList();
+  phys = new MyPhysicsList(bremmstralung);
   //phys = new QGSP_BERT();
 
   phys->SetVerboseLevel(1);
   runManager->SetUserInitialization(phys);
   //PhysicsList* physicsList1 = new PhysicsList(detConstruction); runManager->SetUserInitialization(physicsList1);
   //runManager-> SetUserInitialization(new OpNovicePhysicsList());
-  
+
 
 
   ActionInitialization* actionInitialization
      = new ActionInitialization(detConstruction);
   runManager->SetUserInitialization(actionInitialization);
-  
+
   // Initialize visualization
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
@@ -79,7 +85,7 @@ G4double thickness = 10;
     G4VisManager* visManager = new G4VisExecutive;
     visManager->Initialize();
     G4UIExecutive* ui = 0;
-    ui = new G4UIExecutive(argc, argv);  
+    ui = new G4UIExecutive(argc, argv);
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     if (ui->IsGUI()) {
       UImanager->ApplyCommand("/control/execute gui.mac");
@@ -88,7 +94,7 @@ G4double thickness = 10;
     delete visManager;
     delete ui;
   }
-  else  {  
+  else  {
     // batch mode
     G4String command = "/control/execute ";
     G4String macro = argv[1];

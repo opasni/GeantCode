@@ -21,12 +21,13 @@
 #include "G4PhysicsListHelper.hh"
 #include "G4BuilderType.hh"
 #include "G4AutoDelete.hh"
- 
+
 #include "G4PhysicsConstructorFactory.hh"
 #include "G4LossTableManager.hh"
 #include "G4ProcessManager.hh"
 
-MyPhysicsList::MyPhysicsList()
+MyPhysicsList::MyPhysicsList(G4String bremm)
+ : fbremm(bremm)
 {
   G4LossTableManager::Instance();
   defaultCutValue = 0.7*mm;
@@ -46,10 +47,10 @@ MyPhysicsList::MyPhysicsList()
   fHadronPhysicsList = new G4HadronPhysicsQGSP_BERT();
 
 
-}    
+}
 
-MyPhysicsList::~MyPhysicsList() 
-{  
+MyPhysicsList::~MyPhysicsList()
+{
   delete fParticleList;
   delete fEmPhysicsList;
   delete fEmExPhysicsList;
@@ -76,7 +77,7 @@ void MyPhysicsList::ConstructProcess()
   fHadronElasticPhysicsList->ConstructProcess();
   fHadronPhysicsList->ConstructProcess();
   fIonPhysicsList->ConstructProcess();
-  
+
 }
 
 
@@ -91,12 +92,12 @@ void MyPhysicsList::ConstructProcess()
 
 void MyPhysicsList::InverseBetaProcess()
 {
-  
+
   G4ProcessManager * aProcMan = 0;
 
   theElectronNuclearProcess = new G4ElectronNuclearProcess;
   theElectroReaction = new InverseBetaModel;
-  
+
   aProcMan = G4Electron::Electron()->GetProcessManager();
   theElectronNuclearProcess->RegisterMe(theElectroReaction);
   theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,13));
