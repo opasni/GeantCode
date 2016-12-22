@@ -1,4 +1,4 @@
-#include "G4EmExtraPhysics.hh"
+#include "EmExtraPhysics.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4SynchrotronRadiation.hh"
