@@ -32,29 +32,26 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction(G4double layerthick)
+DetectorConstruction::DetectorConstruction(G4String tarmat)
  : G4VUserDetectorConstruction(),
    fAbsorberPV(0),
    fCheckOverlaps(true),
-   layer_thickness(layerthick*um)
-{
-  //layer_thickness = layer_thickness * layerthick;
-  G4cout << G4BestUnit(layer_thickness, "Length") << G4endl;
-}
+   ftarmat(tarmat)
+{}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::~DetectorConstruction()
-{ 
+{
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  // Define materials 
+  // Define materials
   DefineMaterials();
-  
+
   // Define volumes
   return DefineVolumes();
 }
@@ -62,19 +59,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::DefineMaterials()
-{ 
+{
   // Lead material defined using NIST Manager
   G4NistManager* nistManager = G4NistManager::Instance();
   nistManager->FindOrBuildMaterial("G4_Al");
   nistManager->FindOrBuildMaterial("G4_lH2");
   nistManager->FindOrBuildMaterial("G4_Be");
   nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
-  G4double z, a, density;  
+  G4double z, a, density;
   G4int ncomponents, natoms;
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
 
-  // Liquid Hydrogen  
+  // Liquid Hydrogen
   G4Element* H  = new G4Element("Hydrogen" ,"H" , z= 1., a=   2.02*g/mole);
   G4Material* H2l = new G4Material("H2liquid", density= 70.85*kg/m3, ncomponents=1);
   H2l->AddElement(H, natoms=2);
@@ -91,21 +88,27 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4Material* defaultMaterial = G4Material::GetMaterial("Galactic");
   G4Material* lH2 = G4Material::GetMaterial("H2liquid");
   // G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
-  // G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
-  // G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
-  G4Material* tarwall_mat = G4Material::GetMaterial("Galactic");
-  G4Material* tarwind_mat = G4Material::GetMaterial("Galactic");
-  //G4Material* scint_mat = G4Material::GetMaterial("G4_POLYETHYLENE");   
-  G4Material* scint_mat = G4Material::GetMaterial("Galactic");  
+  G4Material* tarwall_mat;
+  G4Material* tarwind_mat;
+  if (ftarmat == "yes") {
+    tarwall_mat = G4Material::GetMaterial("G4_Al");
+    tarwind_mat = G4Material::GetMaterial("G4_Be");
+  }
+  else {
+    tarwall_mat = G4Material::GetMaterial("Galactic");
+    tarwind_mat = G4Material::GetMaterial("Galactic");
+  }
+  //G4Material* scint_mat = G4Material::GetMaterial("G4_POLYETHYLENE");
+  G4Material* scint_mat = G4Material::GetMaterial("Galactic");
 
-  //     
+  //
   // World
   //
   //G4double env_sizeXY = 120*cm, env_sizeZ = 180*cm;
   G4double world_sizeXY = 1.2*1100*cm;
   G4double world_sizeZ  = 1600*cm;
   G4Box* solidWorld = new G4Box("World", 0.5*world_sizeXY, 0.5*world_sizeXY, 0.5*world_sizeZ);
-  G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, defaultMaterial, "World");                                    
+  G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, defaultMaterial, "World");
   G4VPhysicalVolume* physWorld = new G4PVPlacement(0, G4ThreeVector(), logicWorld, "World", 0, false, 0, fCheckOverlaps);
 
   //
@@ -118,17 +121,17 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4double hz = 10*cm;
   G4double startAngle = 0.*deg;
   G4double spanningAngle = 360.*deg;
-  //G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm; 
+  //G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm;
 
   G4ThreeVector tarpos = G4ThreeVector(0, 0, 0);
   G4Tubs* solidtar = new G4Tubs("Target", 0.*cm, outRlay1+wall_thickness, 0.5*hz+window_thickness, startAngle, spanningAngle);
   G4LogicalVolume* logictar = new G4LogicalVolume(solidtar, defaultMaterial, "Target");
   new G4PVPlacement(0, tarpos, logictar, "Target", logicWorld, false, 0, fCheckOverlaps);
 
-  //     
+  //
   // Target Layer
-  //  
-  G4ThreeVector laypos1 = G4ThreeVector(0, 0, 0); 
+  //
+  G4ThreeVector laypos1 = G4ThreeVector(0, 0, 0);
   G4ThreeVector laypos2 = G4ThreeVector(0, 0, 0.5*(hz+window_thickness));
   G4ThreeVector laypos3 = G4ThreeVector(0, 0, -0.5*(hz+window_thickness));
 
@@ -147,15 +150,15 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   new G4PVPlacement(0, laypos2, logictarlayer2, "Target Wind 1", logictar, false, 0, fCheckOverlaps);
   new G4PVPlacement(0, laypos3, logictarlayer3, "Target Wind 2", logictar, false, 0, fCheckOverlaps);
 
-  //     
+  //
   // Target True
 
   G4ThreeVector pos1a = G4ThreeVector(0, 0, 0);
   G4Tubs* solidtarget = new G4Tubs("Target Center", 0.*cm, outRlay1, 0.5*hz, startAngle, spanningAngle);
   G4LogicalVolume* logictarget = new G4LogicalVolume(solidtarget, lH2, "Target Center");
-  fTargetPV = new G4PVPlacement(0, pos1a, logictarget, "Target Center", logictar, false, 0, fCheckOverlaps); 
+  fTargetPV = new G4PVPlacement(0, pos1a, logictarget, "Target Center", logictar, false, 0, fCheckOverlaps);
 
-  //     
+  //
   // Scintillator
   //
   // Sphere
@@ -170,10 +173,10 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4double scint_ThetaD = pi;
 
   G4Sphere* solidscint = new G4Sphere("Scintillator Mother", scint_Rmin, scint_Rmax, scint_PhiS, scint_PhiD, scint_ThetaS, scint_ThetaD);
-  G4LogicalVolume* logicscint = new G4LogicalVolume(solidscint, scint_mat, "Scintillator Mother");         
-  fAbsorberPV = new G4PVPlacement(0, scint_pos, logicscint, "Scintillator Mother", logicWorld, false, 0, fCheckOverlaps); 
+  G4LogicalVolume* logicscint = new G4LogicalVolume(solidscint, scint_mat, "Scintillator Mother");
+  fAbsorberPV = new G4PVPlacement(0, scint_pos, logicscint, "Scintillator Mother", logicWorld, false, 0, fCheckOverlaps);
 
-        //                                 
+        //
         // Scintillator Layer
         //
   /*
@@ -184,11 +187,11 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4LogicalVolume* scintlayerLV = new G4LogicalVolume(scintlayerS, defaultMaterial, "Scintillator Layer Phi");
 
   G4VPVParameterisation* chamberParamPHI = new ChamberParameterisationPHI(nofLayersPhi, scint_PhiS, dPhi);
-  
+
   new G4PVParameterised("Scintillator Layer Phi", scintlayerLV, logicscint, kUndefined, nofLayersPhi, chamberParamPHI);
 
   //new G4PVReplica("Scintillator Layer", scintlayerLV, logicscint, kPhi, nofLayersPhi, scint_PhiD/nofLayersPhi);
-  
+
   G4int nofLayersTheta = 80;
   G4double dTheta = scint_ThetaD/nofLayersTheta;
 
@@ -196,7 +199,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4LogicalVolume* scintlayerLV2 = new G4LogicalVolume(scintlayerS2, scint_mat, "Scintillator Layer");
 
   G4VPVParameterisation* chamberParam = new ChamberParameterisation(nofLayersTheta, scint_ThetaS, dTheta);
-  
+
   fAbsorberPV = new G4PVParameterised("Scintillator Layer", scintlayerLV2, scintlayerLV, kUndefined, nofLayersTheta, chamberParam);
 */
 
@@ -204,13 +207,13 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   // print parameters
   //
   //G4cout
-  //  << G4endl 
+  //  << G4endl
   //  << "------------------------------------------------------------" << G4endl
   //  << "---> The scintillator is " << nofLayers << " layers of: [ "
   //  << layerThickness/cm << "cm of " << scint_mat->GetName()          << G4endl
   //  << "------------------------------------------------------------" << G4endl;
-  
-  //                                        
+
+  //
   // Visualization attributes
   //
   logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
@@ -225,4 +228,3 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   return physWorld;
 }
-
