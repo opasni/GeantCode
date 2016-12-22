@@ -2,7 +2,7 @@
 #include "G4IonPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4EmStandardPhysics_option2.hh"
-#include "G4EmExtraPhysics.hh"
+#include "EmExtraPhysics.hh"
 #include "G4StoppingPhysics.hh"
 #include "G4HadronPhysicsQGSP_BERT.hh"
 #include "G4HadronElasticPhysics.hh"
