@@ -98,9 +98,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
 
   G4bool checkOverlaps = fcheckOverlaps;
-  G4double world_sizeX = 600*cm;
-  G4double world_sizeY = 600*cm;
-  G4double world_sizeZ  = 600*cm;
+  G4double world_sizeX = 300*cm;
+  G4double world_sizeY = 300*cm;
+  G4double world_sizeZ  = 350*cm;
 
   G4Box* solidWorld =
           new G4Box("World", 0.5*world_sizeX, 0.5*world_sizeY, 0.5*world_sizeZ);
@@ -148,7 +148,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4double detectTarDist = 2.5*m;
   G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
-
+  fscintDetails = detectR - detectZ;
   G4double detsinR = (detectR-target_posz)*sin(rotTheta);
   G4double detcosR = (detectR-target_posz)*cos(rotTheta)+target_posz;
 
@@ -296,7 +296,7 @@ void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4d
 
   //G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
   //fieldRotMag->rotateX(90.*deg);
-  new G4PVPlacement(fieldRotMag,magplace,fMagneticLogical,
+  fMagnetPV = new G4PVPlacement(fieldRotMag,magplace,fMagneticLogical,
                     "magneticPhysical",worldLogical,
                     false,0,checkOverlaps);
 
@@ -317,7 +317,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
   G4int nofLayers = fnofLayers;
   G4Material* polyeth = detectMat[0];
   G4Material* vacuum = detectMat[1];
-  G4Material* lead = detectMat[2];
+  // G4Material* lead = detectMat[2];
   G4double detectINXY = 0.1000001*m;
   //G4double leadThickness = 0.5*cm;
   G4double leadThickness = 0*cm;

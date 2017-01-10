@@ -42,8 +42,10 @@ public:
     void ConstructMaterials();
 
     G4int GetNumberOfLayers() const;
+    G4double GetScintPosition() const;
 
     const G4VPhysicalVolume* GetAbsorberPV() const;
+    const G4VPhysicalVolume* GetMagnetPV() const;
 
 private:
 
@@ -54,12 +56,14 @@ private:
     static G4ThreadLocal G4FieldManager* fFieldMgr;
 
     G4VPhysicalVolume* fHadCalScintiPV;
+    G4VPhysicalVolume*   fMagnetPV; // the absorber physical volume
     G4LogicalVolume* fscintScintLogical;
     G4LogicalVolume* fMagneticLogical;
 
     std::vector<G4VisAttributes*> fVisAttributes;
 
     G4int fnofLayers;
+    G4double fscintDetails;
 
 };
 
@@ -67,6 +71,14 @@ private:
 
 inline G4int DetectorConstruction::GetNumberOfLayers() const {
     return fnofLayers;
+}
+
+inline G4double DetectorConstruction::GetScintPosition() const {
+    return fscintDetails;
+}
+
+inline const G4VPhysicalVolume* DetectorConstruction::GetMagnetPV() const {
+  return fMagnetPV;
 }
 
 inline const G4VPhysicalVolume* DetectorConstruction::GetAbsorberPV() const {

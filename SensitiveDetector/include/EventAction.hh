@@ -3,6 +3,7 @@
 
 
 #include "G4UserEventAction.hh"
+#include "DetectorConstruction.hh"
 #include "globals.hh"
 
 #include <vector>
@@ -14,17 +15,18 @@
 class EventAction : public G4UserEventAction
 {
 public:
-    EventAction(G4int fnofLayers);
+    EventAction(const DetectorConstruction* detectorConstruction);
     virtual ~EventAction();
-    
+
     virtual void BeginOfEventAction(const G4Event*);
     virtual void EndOfEventAction(const G4Event*);
 
     std::vector<G4double>& GetHadCalEdep() { return fHadCalEdep; }
-    
+
 private:
     G4int fHCHCID;
     std::vector<G4double> fHadCalEdep;
+    G4double fscintDetails;
     G4int nofLayers;
 };
 

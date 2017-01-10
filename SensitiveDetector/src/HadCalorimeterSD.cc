@@ -30,12 +30,12 @@ HadCalorimeterSD::~HadCalorimeterSD()
 
 void HadCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 {
-    fHitsCollection 
+    fHitsCollection
       = new HadCalorimeterHitsCollection(SensitiveDetectorName,collectionName[0]);
     if (fHCID<0)
     { fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); }
     hce->AddHitsCollection(fHCID,fHitsCollection);
-    
+
     // fill calorimeter hits with zero energy deposition
     for (G4int iColumn=0;iColumn<nofLayers;iColumn++)
         for (G4int iRow=0;iRow<nofLayers;iRow++)
@@ -49,23 +49,15 @@ void HadCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
-    G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
-    //G4String proces = step->GetTrack()-> GetCreatorProcess()->GetProcessName();
-    //if ( name != "neutron") return true;
-    //if ( name == "e-") return true;
-    //if ( name == "e+") return true;
-    //if ( proces == "eBrem") return true;
-    //if ( proces == "annihil") return true;
-
     G4double edep = step->GetTotalEnergyDeposit();
     if (edep==0.) return true;
 
     G4double timeglob = step->GetTrack()->GetGlobalTime();
-    G4ThreeVector postr = step->GetTrack()->GetPosition();
-    //G4VProcess process = step->GetTrack()-> GetCreatorProcess();
-    //if ( name == "gamma")
-    // {G4cout << "Particle name: " << name << " and process name: " << proces << " and time: " << timeglob << G4endl;}
-    //G4cout << process.GetProcessName()  << G4endl;
+    G4ThreeVector vertpos = step->GetTrack()->GetVertexPosition();
+    G4String process = step->GetTrack()-> GetCreatorProcess()->GetProcessName();
+    G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
+
+    // G4cout << vertpos  << " " << process << " " << name <<G4endl;
 
     //if ( timeglob < 60*ns) return true;
 
@@ -75,7 +67,7 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4VPhysicalVolume* cellPhysical = touchable->GetVolume(2);
     G4int rowNo = cellPhysical->GetCopyNo();
     G4VPhysicalVolume* columnPhysical = touchable->GetVolume(3);
-    G4int columnNo = cellPhysical->GetCopyNo(); 
+    G4int columnNo = columnPhysical->GetCopyNo();
     G4VPhysicalVolume* layerPhysical = touchable->GetVolume(1);
     G4int layerNo = layerPhysical->GetCopyNo();
 
@@ -84,24 +76,26 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     G4int hitID = nofLayers*columnNo+rowNo;
     HadCalorimeterHit* hit = (*fHitsCollection)[hitID];
-    
+
     // check if it is first touch
     if (hit->GetColumnID()<0)
     {
         hit->SetColumnID(columnNo);
         hit->SetRowID(layerNo);
         hit->SetTime(timeglob);
-        hit->SetPos(postr);
+        hit->SetPos(vertpos);
+        hit->SetProcess(process);
+        hit->SetName(name);
         G4int depth = touchable->GetHistory()->GetDepth();
-        G4AffineTransform transform 
+        G4AffineTransform transform
           = touchable->GetHistory()->GetTransform(depth-2);
         transform.Invert();
         hit->SetRot(transform.NetRotation());
-        hit->SetPos(transform.NetTranslation());
+        // hit->SetPos(transform.NetTranslation());
     }
     // add energy deposition
     hit->AddEdep(edep);
-    
+
     return true;
 }
 

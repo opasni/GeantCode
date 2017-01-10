@@ -15,14 +15,14 @@ class MyPhysicsList : public G4VModularPhysicsList
 {
 public:
 
-  MyPhysicsList();
+  MyPhysicsList(G4String bremm);
   virtual ~MyPhysicsList();
 
   virtual void ConstructParticle();
   virtual void ConstructProcess();
-  virtual void SetCuts();
+  //virtual void SetCuts();
 
-  virtual void InverseBetaProcess(); 
+  virtual void InverseBetaProcess();
 
 private:
 
@@ -34,6 +34,7 @@ private:
   G4VPhysicsConstructor*  fParticleList;
 
 
+  //G4VPhysicsConstructor*  fLivermore;
   G4VPhysicsConstructor*  fEmPhysicsList;
   G4VPhysicsConstructor*  fEmExPhysicsList;
   G4VPhysicsConstructor*  fIonPhysicsList;
@@ -41,7 +42,9 @@ private:
   G4VPhysicsConstructor* fHadronPhysicsList;
 
   G4ElectronNuclearProcess * theElectronNuclearProcess;
-  InverseBetaModel * theElectroReaction;    
+  InverseBetaModel * theElectroReaction;
+
+  G4String fbremm;
 
 };
 

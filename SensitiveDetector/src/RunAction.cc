@@ -22,13 +22,12 @@ RunAction::RunAction(EventAction* eventAction, G4int fnofLayers)
   analysisManager->SetFileName("Project");
   //
   //if ( fEventAction ) {
-    analysisManager->CreateNtuple("1", "Hits");
-    analysisManager->CreateNtupleDColumn("Energy"); // column Id = 1
-    analysisManager->CreateNtupleIColumn("LayerID"); // column Id = 1
-    analysisManager->CreateNtupleIColumn("ColumnID"); // column Id = 1
+    analysisManager->CreateNtuple("Hits", "Hits");
+    analysisManager->CreateNtupleDColumn("Energy"); // column Id = 0
     analysisManager->CreateNtupleDColumn("Time"); // column Id = 1
-    analysisManager->CreateNtupleDColumn("PositionX"); // column Id = 1
-    analysisManager->CreateNtupleDColumn("PositionY"); // column Id = 1
+    analysisManager->CreateNtupleDColumn("VertexPositionZ"); // column Id = 2
+    analysisManager->CreateNtupleSColumn("Process"); // column Id = 3
+    analysisManager->CreateNtupleSColumn("Name"); // column Id = 4
     analysisManager->FinishNtuple();
   //}
 }

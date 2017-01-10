@@ -20,13 +20,13 @@ G4ThreadLocal G4Allocator<HadCalorimeterHit>* HadCalorimeterHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HadCalorimeterHit::HadCalorimeterHit()\
-: G4VHit(), fColumnID(-1), fRowID(-1), fEdep(0.), fPos(0), fTime(0)
+: G4VHit(), fColumnID(-1), fRowID(-1), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HadCalorimeterHit::HadCalorimeterHit(G4int iCol,G4int iRow)
-: G4VHit(), fColumnID(iCol), fRowID(iRow), fEdep(0.), fPos(0), fTime(0)
+: G4VHit(), fColumnID(iCol), fRowID(iRow), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -43,6 +43,8 @@ HadCalorimeterHit::HadCalorimeterHit(const HadCalorimeterHit &right)
     fEdep = right.fEdep;
     fPos = right.fPos;
     fTime = right.fTime;
+    fProcess = right.fProcess;
+    fName = right.fName;
     fRot = right.fRot;
 }
 
@@ -56,6 +58,8 @@ const HadCalorimeterHit& HadCalorimeterHit::operator=(const
     fEdep = right.fEdep;
     fPos = right.fPos;
     fTime = right.fTime;
+    fProcess = right.fProcess;
+    fName = right.fName;
     fRot = right.fRot;
     return *this;
 }
@@ -97,26 +101,34 @@ const std::map<G4String,G4AttDef>* HadCalorimeterHit::GetAttDefs() const
     = G4AttDefStore::GetInstance("HadCalorimeterHit",isNew);
 
     if (isNew) {
-        (*store)["HitType"] 
+        (*store)["HitType"]
           = G4AttDef("HitType","Hit Type","Physics","","G4String");
-        
-        (*store)["Column"] 
+
+        (*store)["Column"]
           = G4AttDef("Column","Column ID","Physics","","G4int");
-        
-        (*store)["Row"] 
+
+        (*store)["Row"]
           = G4AttDef("Row","Row ID","Physics","","G4int");
-        
-        (*store)["Energy"] 
+
+        (*store)["Energy"]
           = G4AttDef("Energy","Energy Deposited","Physics","G4BestUnit",
                      "G4double");
-        
-        (*store)["Pos"] 
+
+        (*store)["Pos"]
           = G4AttDef("Pos", "Position", "Physics","G4BestUnit",
                      "G4ThreeVector");
-        
-        (*store)["Time"] 
+
+        (*store)["Time"]
           = G4AttDef("Time","Time of Hit","Physics","G4BestUnit",
                      "G4double");
+
+        (*store)["Prcess"]
+          = G4AttDef("Process","Process Name","Physics","",
+                     "G4String");
+
+        (*store)["Name"]
+          = G4AttDef("Name","Particle Name","Physics","",
+                     "G4String");
     }
     return store;
 }
@@ -126,7 +138,7 @@ const std::map<G4String,G4AttDef>* HadCalorimeterHit::GetAttDefs() const
 std::vector<G4AttValue>* HadCalorimeterHit::CreateAttValues() const
 {
     std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
-    
+
     values
       ->push_back(G4AttValue("HitType","HadCalorimeterHit",""));
     values
@@ -140,7 +152,11 @@ std::vector<G4AttValue>* HadCalorimeterHit::CreateAttValues() const
       ->push_back(G4AttValue("Pos",G4BestUnit(fPos,"Length"),""));
     values
       ->push_back(G4AttValue("Time",G4BestUnit(fTime,"Time"),""));
-    
+    values
+      ->push_back(G4AttValue("Prcess",fProcess,""));
+    values
+      ->push_back(G4AttValue("Name",fName,""));
+
     return values;
 }
 

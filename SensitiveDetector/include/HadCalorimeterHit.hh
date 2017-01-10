@@ -15,9 +15,11 @@ class G4AttValue;
 /// Hadron Calorimeter hit
 ///
 /// It records:
-/// - the cell column ID and row ID
-/// - the energy deposit 
-/// - the cell position and rotation
+/// - the vertex position
+/// - the energy deposit
+/// - the time
+/// - the process name
+/// - the particle name
 
 class HadCalorimeterHit : public G4VHit
 {
@@ -29,15 +31,15 @@ public:
 
     const HadCalorimeterHit& operator=(const HadCalorimeterHit &right);
     int operator==(const HadCalorimeterHit &right) const;
-    
+
     inline void *operator new(size_t);
     inline void operator delete(void *aHit);
-    
+
     virtual void Draw();
     virtual const std::map<G4String,G4AttDef>* GetAttDefs() const;
     virtual std::vector<G4AttValue>* CreateAttValues() const;
     virtual void Print();
-    
+
     void SetColumnID(G4int z) { fColumnID = z; }
     G4int GetColumnID() const { return fColumnID; }
 
@@ -54,9 +56,15 @@ public:
     void SetTime(G4double t) { fTime = t; }
     G4double GetTime() const { return fTime; }
 
+    void SetProcess(G4String pr) { fProcess = pr; }
+    G4String GetProcess() const { return fProcess; }
+
+    void SetName(G4String name) { fName = name; }
+    G4String GetName() const { return fName; }
+
     void SetRot(G4RotationMatrix rmat) { fRot = rmat; }
     G4RotationMatrix GetRot() const { return fRot; }
-    
+
 private:
     G4int fColumnID;
     G4int fRowID;
@@ -64,6 +72,8 @@ private:
     G4ThreeVector fPos;
     G4double fTime;
     G4RotationMatrix fRot;
+    G4String fProcess;
+    G4String fName;
 };
 
 typedef G4THitsCollection<HadCalorimeterHit> HadCalorimeterHitsCollection;

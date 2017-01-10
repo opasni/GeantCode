@@ -2,6 +2,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
+#include "SteppingAction.hh"
 #include "DetectorConstruction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -28,12 +29,13 @@ void ActionInitialization::BuildForMaster() const
 
 void ActionInitialization::Build() const
 {
-  SetUserAction(new PrimaryGeneratorAction);
-
-  EventAction* eventAction = new EventAction(fDetConstruction->GetNumberOfLayers());
+  EventAction* eventAction = new EventAction(fDetConstruction);
   SetUserAction(eventAction);
 
+  SetUserAction(new PrimaryGeneratorAction);
   SetUserAction(new RunAction(eventAction, fDetConstruction->GetNumberOfLayers()));
-}  
+
+  SetUserAction(new SteppingAction(fDetConstruction));
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

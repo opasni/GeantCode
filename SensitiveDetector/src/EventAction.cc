@@ -19,11 +19,12 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction(G4int fnofLayers)
+EventAction::EventAction(const DetectorConstruction* detectorConstruction)
 : G4UserEventAction(),
     fHCHCID(-1),
     fHadCalEdep(),
-    nofLayers(fnofLayers)
+    fscintDetails(detectorConstruction->GetScintPosition()),
+    nofLayers(detectorConstruction->GetNumberOfLayers())
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1);
   fHadCalEdep.resize(nofLayers*nofLayers, 0.);
@@ -73,23 +74,21 @@ void EventAction::EndOfEventAction(const G4Event* event)
     {
         HadCalorimeterHit* hit = (*hcHC)[i];
         G4double eDep = hit->GetEdep();
-        G4double dtime = hit->GetTime();
         if (eDep>0.)
         {
-            G4int layerID = hit->GetRowID();
-            G4int columnID = hit->GetColumnID();
-            //G4cout << layerID << G4endl;
-            G4ThreeVector pos = hit->GetPos();
-            //if ((pos[0]<100) && (pos[0]>=-100) && (pos[1]<100) && (pos[1]>=-100)) G4int a;
-            //if ((posX<100) && (posX>=-100) && (posY<100) && (posY>=-100)) G4int a;
-            //else    {
-            analysisManager->FillNtupleIColumn(1, layerID);
-            analysisManager->FillNtupleIColumn(2, columnID);
-            analysisManager->FillNtupleDColumn(3, dtime);
-            analysisManager->FillNtupleDColumn(4, pos[0]);
-            analysisManager->FillNtupleDColumn(5, pos[1]);
-            totalHadHit++;
-            totalHadE += eDep;
+          G4double dtime = hit->GetTime();
+          G4ThreeVector pos = hit->GetPos();
+          G4String proc = hit->GetProcess();
+          G4String name = hit->GetName();
+          //if ((pos[0]<100) && (pos[0]>=-100) && (pos[1]<100) && (pos[1]>=-100)) G4int a;
+          //if ((posX<100) && (posX>=-100) && (posY<100) && (posY>=-100)) G4int a;
+          //else    {
+          analysisManager->FillNtupleDColumn(1, dtime);
+          analysisManager->FillNtupleDColumn(2, pos[2]-fscintDetails);
+          analysisManager->FillNtupleSColumn(3, proc);
+          analysisManager->FillNtupleSColumn(4, name);
+          totalHadHit++;
+          totalHadE += eDep;
             //}
         }
         fHadCalEdep[i] = eDep;

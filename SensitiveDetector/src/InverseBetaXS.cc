@@ -54,7 +54,7 @@ G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G
   {
    	G4double energyE = aPart->GetKineticEnergy()/MeV; // Electron energy
 
-    //if (energyE < 60.) return 0.;
+    if (energyE < 60.) return 0.;
 
     if (energyE == lastE)  return lastSig*picobarn;// Don't calculate again
 

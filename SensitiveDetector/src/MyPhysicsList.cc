@@ -2,10 +2,11 @@
 #include "G4IonPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4EmStandardPhysics_option2.hh"
-#include "G4EmExtraPhysics.hh"
+#include "EmExtraPhysics.hh"
 #include "G4StoppingPhysics.hh"
 #include "G4HadronPhysicsQGSP_BERT.hh"
 #include "G4HadronElasticPhysics.hh"
+#include "EmLivermorePhysics.hh"
 
 #include "MyPhysicsList.hh"
 
@@ -20,12 +21,13 @@
 #include "G4PhysicsListHelper.hh"
 #include "G4BuilderType.hh"
 #include "G4AutoDelete.hh"
- 
+
 #include "G4PhysicsConstructorFactory.hh"
 #include "G4LossTableManager.hh"
 #include "G4ProcessManager.hh"
 
-MyPhysicsList::MyPhysicsList()
+MyPhysicsList::MyPhysicsList(G4String bremm)
+ : fbremm(bremm)
 {
   G4LossTableManager::Instance();
   defaultCutValue = 0.7*mm;
@@ -36,7 +38,8 @@ MyPhysicsList::MyPhysicsList()
 
   // Particles
   fParticleList = new G4DecayPhysics("decays");
-  fEmPhysicsList = new G4EmStandardPhysics();
+  fEmPhysicsList = new EmLivermorePhysics();
+  //fEmPhysicsList = new G4EmStandardPhysics();
   fEmExPhysicsList = new G4EmExtraPhysics();
   fIonPhysicsList = new G4IonPhysics();
   fHadronElasticPhysicsList = new G4HadronElasticPhysics();
@@ -44,10 +47,10 @@ MyPhysicsList::MyPhysicsList()
   fHadronPhysicsList = new G4HadronPhysicsQGSP_BERT();
 
 
-}    
+}
 
-MyPhysicsList::~MyPhysicsList() 
-{  
+MyPhysicsList::~MyPhysicsList()
+{
   delete fParticleList;
   delete fEmPhysicsList;
   delete fEmExPhysicsList;
@@ -60,8 +63,6 @@ void MyPhysicsList::ConstructParticle()
 {
   fParticleList->ConstructParticle();
 }
-
-//#include "G4EmProcessOptions.hh"
 
 void MyPhysicsList::ConstructProcess()
 {
@@ -76,30 +77,30 @@ void MyPhysicsList::ConstructProcess()
   fHadronElasticPhysicsList->ConstructProcess();
   fHadronPhysicsList->ConstructProcess();
   fIonPhysicsList->ConstructProcess();
-  
+
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void MyPhysicsList::SetCuts()
-{
-  SetCutValue(fCutForElectron, "e-");
-  SetCutValue(fCutForProton, "proton");
-}
+// void MyPhysicsList::SetCuts()
+// {
+//   SetCutValue(fCutForElectron, "e-");
+//   SetCutValue(fCutForProton, "proton");
+// }
 
 
 void MyPhysicsList::InverseBetaProcess()
 {
-  
+
   G4ProcessManager * aProcMan = 0;
 
   theElectronNuclearProcess = new G4ElectronNuclearProcess;
   theElectroReaction = new InverseBetaModel;
-  
+
   aProcMan = G4Electron::Electron()->GetProcessManager();
   theElectronNuclearProcess->RegisterMe(theElectroReaction);
-  //theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,13));
+  theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,13));
 
   aProcMan->AddDiscreteProcess(theElectronNuclearProcess);
 

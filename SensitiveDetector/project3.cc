@@ -40,7 +40,7 @@ int main(int argc,char** argv)
 #else
   //my Verbose output class
   G4RunManager* runManager = new G4RunManager;
-#endif 
+#endif
   DetectorConstruction* detConstruction = new DetectorConstruction();
   runManager->SetUserInitialization(detConstruction);
 
@@ -48,15 +48,15 @@ int main(int argc,char** argv)
   G4VModularPhysicsList* phys = 0;
 
 
-  phys = new MyPhysicsList();
+  phys = new MyPhysicsList("yes");
 
   phys->SetVerboseLevel(1);
-  runManager->SetUserInitialization(phys);  
+  runManager->SetUserInitialization(phys);
 
 
   ActionInitialization* actionInitialization = new ActionInitialization(detConstruction);
   runManager->SetUserInitialization(actionInitialization);
-  
+
   // Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
@@ -70,7 +70,7 @@ int main(int argc,char** argv)
   if ( argc==1 ) {
     // interactive mode : define UI session
     G4UIExecutive* ui = 0;
-    ui = new G4UIExecutive(argc, argv);  
+    ui = new G4UIExecutive(argc, argv);
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     if (ui->IsGUI()) {
       UImanager->ApplyCommand("/control/execute gui.mac");
@@ -78,7 +78,7 @@ int main(int argc,char** argv)
     ui->SessionStart();
     delete ui;
   }
-  else  {  
+  else  {
     // batch mode
     G4String command = "/control/execute ";
     G4String macro = argv[1];
