@@ -12,7 +12,7 @@ RunAction::RunAction(EventAction* eventAction, G4int fnofLayers)
  : G4UserRunAction(),
    fEventAction(eventAction),
     nofLayers(fnofLayers)
-{ 
+{
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   G4cout << "Using " << analysisManager->GetType() << G4endl;
 
@@ -24,8 +24,8 @@ RunAction::RunAction(EventAction* eventAction, G4int fnofLayers)
   //if ( fEventAction ) {
     analysisManager->CreateNtuple("1", "Hits");
     analysisManager->CreateNtupleDColumn("Energy"); // column Id = 1
-    analysisManager->CreateNtupleDColumn("LayerID"); // column Id = 1
-    analysisManager->CreateNtupleDColumn("ColumnID"); // column Id = 1
+    analysisManager->CreateNtupleIColumn("LayerID"); // column Id = 1
+    analysisManager->CreateNtupleIColumn("ColumnID"); // column Id = 1
     analysisManager->CreateNtupleDColumn("Time"); // column Id = 1
     analysisManager->CreateNtupleDColumn("PositionX"); // column Id = 1
     analysisManager->CreateNtupleDColumn("PositionY"); // column Id = 1
@@ -37,13 +37,13 @@ RunAction::RunAction(EventAction* eventAction, G4int fnofLayers)
 
 RunAction::~RunAction()
 {
-  delete G4AnalysisManager::Instance();  
+  delete G4AnalysisManager::Instance();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::BeginOfRunAction(const G4Run* /*run*/)
-{ 
+{
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->OpenFile();
 }
@@ -59,4 +59,3 @@ void RunAction::EndOfRunAction(const G4Run* /*run*/)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-

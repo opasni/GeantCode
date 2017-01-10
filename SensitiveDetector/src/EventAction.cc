@@ -43,27 +43,27 @@ void EventAction::BeginOfEventAction(const G4Event*)
       G4SDManager* sdManager = G4SDManager::GetSDMpointer();
       fHCHCID = sdManager->GetCollectionID("HadCalorimeter/HadCalorimeterColl");
     }
-}     
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
     G4HCofThisEvent* hce = event->GetHCofThisEvent();
-    if (!hce) return;   
+    if (!hce) return;
 
-    // Get hits collections      
-    HadCalorimeterHitsCollection* hcHC 
+    // Get hits collections
+    HadCalorimeterHitsCollection* hcHC
       = static_cast<HadCalorimeterHitsCollection*>(hce->GetHC(fHCHCID));
-      
-    if (!hcHC) return;   
-    
+
+    if (!hcHC) return;
+
     //
     // Fill histograms & ntuple
-    // 
-    
+    //
+
     // Get analysis manager
-    G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();   
+    G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
     //G4int nmid = (nofLayers/2);
 
     // HCEnergy
@@ -83,8 +83,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
             //if ((pos[0]<100) && (pos[0]>=-100) && (pos[1]<100) && (pos[1]>=-100)) G4int a;
             //if ((posX<100) && (posX>=-100) && (posY<100) && (posY>=-100)) G4int a;
             //else    {
-            analysisManager->FillNtupleDColumn(1, layerID);
-            analysisManager->FillNtupleDColumn(2, columnID);
+            analysisManager->FillNtupleIColumn(1, layerID);
+            analysisManager->FillNtupleIColumn(2, columnID);
             analysisManager->FillNtupleDColumn(3, dtime);
             analysisManager->FillNtupleDColumn(4, pos[0]);
             analysisManager->FillNtupleDColumn(5, pos[1]);
@@ -96,15 +96,15 @@ void EventAction::EndOfEventAction(const G4Event* event)
     }
     if (totalHadE != 0.){
         analysisManager->FillNtupleDColumn(0, totalHadE/MeV);
-        analysisManager->AddNtupleRow();  
+        analysisManager->AddNtupleRow();
     }
     //
     // Print diagnostics
-    // 
-    
+    //
+
     G4int printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
     if ( printModulo==0 || event->GetEventID() % printModulo != 0) return;
-    
+
     G4PrimaryParticle* primary = event->GetPrimaryVertex(0)->GetPrimary(0);
     G4cout << G4endl
            << ">>> Event " << event->GetEventID() << " >>> Simulation truth : "

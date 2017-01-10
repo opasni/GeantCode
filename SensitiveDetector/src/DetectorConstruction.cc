@@ -40,7 +40,7 @@
 
 G4ThreadLocal MagneticField* DetectorConstruction::fMagneticField = 0;
 G4ThreadLocal G4FieldManager* DetectorConstruction::fFieldMgr = 0;
-    
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -59,11 +59,11 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction()
 {
-    delete fMessenger; 
-    for (G4int i=0; i<G4int(fVisAttributes.size()); ++i) 
+    delete fMessenger;
+    for (G4int i=0; i<G4int(fVisAttributes.size()); ++i)
     {
       delete fVisAttributes[i];
-    }  
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -72,50 +72,58 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   // Construct materials
   ConstructMaterials();
-  
+
   G4Material* vacuum = G4Material::GetMaterial("Galactic");
-  
-  G4Material* polyeth = G4Material::GetMaterial("G4_POLYETHYLENE"); 
+
+  G4Material* polyeth = G4Material::GetMaterial("G4_POLYETHYLENE");
   G4Material* lead = G4Material::GetMaterial("G4_Pb");
-    
+
   std::vector<G4Material*> detectMat(3,polyeth);
   detectMat[1]=vacuum;
   detectMat[2]=lead;
-  
+
   //G4Material* aluminium = G4Material::GetMaterial("Galactic");
-  G4Material* aluminium = G4Material::GetMaterial("G4_Al");
-  
-  G4Material* lH2 = G4Material::GetMaterial("H2liquid");
-  
+  G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
+  G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
+
+  std::vector<G4Material*> tarMat(3,vacuum);
+  tarMat[1]=tarwall_mat;
+  tarMat[2]=tarwind_mat;
+
+
+  G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
+
   //
   // World
-  // 
+  //
 
   G4bool checkOverlaps = fcheckOverlaps;
   G4double world_sizeX = 600*cm;
   G4double world_sizeY = 600*cm;
   G4double world_sizeZ  = 600*cm;
 
-  G4Box* solidWorld = 
+  G4Box* solidWorld =
           new G4Box("World", 0.5*world_sizeX, 0.5*world_sizeY, 0.5*world_sizeZ);
-  G4LogicalVolume* worldLogical = 
-          new G4LogicalVolume(solidWorld, vacuum, "World");                                    
-  G4VPhysicalVolume* worldPhysical = 
+  G4LogicalVolume* worldLogical =
+          new G4LogicalVolume(solidWorld, vacuum, "World");
+  G4VPhysicalVolume* worldPhysical =
           new G4PVPlacement(0, G4ThreeVector(), worldLogical, "World", 0, false, 0, checkOverlaps);
 
   //
   // Target
   //
 
-  G4double layer_thickness = 10*um;
-  G4double outRlay1 = 2.*cm;
+  G4double wall_thickness = 100*um;
+  G4double window_thickness = 10*um;
+
+  G4double outRlay1 = 2.5*cm;
   G4double hz = 10*cm;
   G4double startAngle = 0.*deg;
   G4double spanningAngle = 360.*deg;
-  G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm; 
+  G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm;
 
-  ConstructTarget(layer_thickness, outRlay1, hz, startAngle, spanningAngle, 
-                  target_posz, vacuum, aluminium, lH2, worldLogical);
+  ConstructTarget(wall_thickness, window_thickness, outRlay1, hz, startAngle, spanningAngle,
+                  target_posz, tarMat, lH2, worldLogical);
 
   //
   // Tube with Local Magnetic field
@@ -124,13 +132,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double rotTheta = 0.; // Specify rotation of magnetic tube and detector
 
   G4double magZR = 0.25*m;
-  G4double magR = -0.5*world_sizeZ+0.5*magZR+0.5*hz+layer_thickness+10*cm;
+  G4double magR = -0.5*world_sizeZ+0.5*magZR+0.5*hz+window_thickness+10*cm;
 
   G4double magsinR = (magR-target_posz)*sin(rotTheta);
   G4double magcosR = (magR-target_posz)*cos(rotTheta)+target_posz;
 
   ConstructMagnet(magZR, magsinR, magcosR, vacuum, worldLogical);
-    
+
   //
   // Hadron Scintillator
   //
@@ -152,14 +160,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   // World visualization attributes
   //
-  
+
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   visAttributes->SetVisibility(false);
   worldLogical->SetVisAttributes(visAttributes);
   fVisAttributes.push_back(visAttributes);
 
   // return the world physical volume ----------------------------------------
-  
+
   return worldPhysical;
 }
 
@@ -171,7 +179,7 @@ void DetectorConstruction::ConstructSDandField()
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   G4String SDname;
 
-  G4VSensitiveDetector* hadCalorimeter 
+  G4VSensitiveDetector* hadCalorimeter
     = new HadCalorimeterSD(SDname="/HadCalorimeter", fnofLayers);
   SDman->AddNewDetector(hadCalorimeter);
   fscintScintLogical->SetSensitiveDetector(hadCalorimeter);
@@ -187,7 +195,7 @@ void DetectorConstruction::ConstructSDandField()
   // Register the field and its manager for deleting
   G4AutoDelete::Register(fMagneticField);
   G4AutoDelete::Register(fFieldMgr);
-}    
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -195,76 +203,68 @@ void DetectorConstruction::ConstructMaterials()
 {
   G4NistManager* nistManager = G4NistManager::Instance();
 
-  // Air 
+  // Air
   nistManager->FindOrBuildMaterial("G4_AIR");
-  
+
   nistManager->FindOrBuildMaterial("G4_Al");
+  nistManager->FindOrBuildMaterial("G4_lH2");
+  nistManager->FindOrBuildMaterial("G4_Be");
   nistManager->FindOrBuildMaterial("G4_Pb");
   nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
-  G4double z, a, density;  
-  G4int ncomponents, natoms;
+  G4double z, a, density;
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
 
-  // Liquid Hydrogen  
-  G4Element* H  = new G4Element("Hydrogen" ,"H" , z= 1., a=   2.02*g/mole);
-  G4Material* H2l = new G4Material("H2liquid", density= 70.85*kg/m3, ncomponents=1);
-  H2l->AddElement(H, natoms=2);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::ConstructTarget(G4double layer_thickness, G4double outRlay1,
+void DetectorConstruction::ConstructTarget(G4double wall_thickness,G4double window_thickness, G4double outRlay1,
                                           G4double hz, G4double startAngle, G4double spanningAngle,
-                                          G4double target_posz, G4Material* vacuum, G4Material* aluminium,
+                                          G4double target_posz, std::vector<G4Material*> tarMat,
                                           G4Material* lH2, G4LogicalVolume* worldLogical)
 {
   G4bool checkOverlaps = fcheckOverlaps;
   G4ThreeVector tarpos = G4ThreeVector(0, 0, target_posz);
-  G4Tubs* solidtar = new G4Tubs("Target", 0.*cm, outRlay1, 0.5*hz, startAngle, spanningAngle);
-  G4LogicalVolume* logictar 
-    = new G4LogicalVolume(solidtar, vacuum, "Target");
+  G4Tubs* solidtar = new G4Tubs("Target", 0.*cm, outRlay1+wall_thickness, 0.5*hz+window_thickness, startAngle, spanningAngle);
+  G4LogicalVolume* logictar = new G4LogicalVolume(solidtar, tarMat[0], "Target");
   new G4PVPlacement(0, tarpos, logictar, "Target", worldLogical, false, 0, checkOverlaps);
- 
-  G4ThreeVector laypos1
-   = G4ThreeVector(0, 0, 0); 
-  G4ThreeVector laypos2
-   = G4ThreeVector(0, 0, 0.5*hz-(0.5*layer_thickness));
-  G4ThreeVector laypos3
-   = G4ThreeVector(0, 0, -0.5*hz+(0.5*layer_thickness));
+
+  G4ThreeVector laypos1 = G4ThreeVector(0, 0, 0);
+  G4ThreeVector laypos2 = G4ThreeVector(0, 0, 0.5*(hz+window_thickness));
+  G4ThreeVector laypos3 = G4ThreeVector(0, 0, -0.5*(hz+window_thickness));
 
   G4Tubs* solidtarlayer1
-    = new G4Tubs("Target Layer 1", outRlay1-layer_thickness, outRlay1, 0.5*hz-layer_thickness, startAngle, spanningAngle);
+    = new G4Tubs("Target Wall", outRlay1, outRlay1 + wall_thickness, 0.5*hz, startAngle, spanningAngle);
   G4Tubs* solidtarlayer2
-    = new G4Tubs("Target Layer 2", 0.*cm, outRlay1, (0.5*layer_thickness), startAngle, spanningAngle);
+    = new G4Tubs("Target Wind 1", 0.*cm, outRlay1+wall_thickness, (0.5*window_thickness), startAngle, spanningAngle);
   G4Tubs* solidtarlayer3
-    = new G4Tubs("Target Layer 3", 0.*cm, outRlay1, (0.5*layer_thickness), startAngle, spanningAngle);
+    = new G4Tubs("Target Wind 2", 0.*cm, outRlay1+wall_thickness, (0.5*window_thickness), startAngle, spanningAngle);
 
   G4LogicalVolume* logictarlayer1
-    = new G4LogicalVolume(solidtarlayer1, aluminium, 
-                     "Target Layer 1");
+    = new G4LogicalVolume(solidtarlayer1, tarMat[1],
+                     "Target Wall");
   G4LogicalVolume* logictarlayer2
-    = new G4LogicalVolume(solidtarlayer2, aluminium, 
-                      "Target Layer 2");
+    = new G4LogicalVolume(solidtarlayer2, tarMat[2],
+                      "Target Wind 1");
   G4LogicalVolume* logictarlayer3
-    = new G4LogicalVolume(solidtarlayer3, aluminium, 
-                      "Target Layer 3");
+    = new G4LogicalVolume(solidtarlayer3, tarMat[2],
+                      "Target Wind 2");
 
-  new G4PVPlacement(0, laypos1, logictarlayer1, 
-                      "Target Layer 1", logictar, false, 0, checkOverlaps);
-  new G4PVPlacement(0, laypos2, logictarlayer2, 
-                      "Target Layer 2", logictar, false, 0, checkOverlaps);
-  new G4PVPlacement(0, laypos3, logictarlayer3, 
-                      "Target Layer 3", logictar, false, 0, checkOverlaps);
-    
+  new G4PVPlacement(0, laypos1, logictarlayer1,
+                      "Target Wall", logictar, false, 0, checkOverlaps);
+  new G4PVPlacement(0, laypos2, logictarlayer2,
+                      "Target Wind 1", logictar, false, 0, checkOverlaps);
+  new G4PVPlacement(0, laypos3, logictarlayer3,
+                      "Target Wind 2", logictar, false, 0, checkOverlaps);
+
   // Target True
   G4ThreeVector pos1a = G4ThreeVector(0, 0, 0);
-  G4Tubs* solidtarget
-    = new G4Tubs("Target Center", 0.*cm, outRlay1-layer_thickness, (0.5*hz)-layer_thickness, startAngle, spanningAngle);
-  G4LogicalVolume* logictarget
-    = new G4LogicalVolume(solidtarget, lH2, "Target Center");
-  new G4PVPlacement(0, pos1a, logictarget, 
-                      "Target Center", logictar, false, 0, checkOverlaps); 
+  G4Tubs* solidtarget = new G4Tubs("Target Center", 0.*cm, outRlay1, 0.5*hz,
+                                    startAngle, spanningAngle);
+  G4LogicalVolume* logictarget = new G4LogicalVolume(solidtarget, lH2, "Target Center");
+  new G4PVPlacement(0, pos1a, logictarget,
+                      "Target Center", logictar, false, 0, checkOverlaps);
 
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(0.8888,0.0,0.0));
   logictarlayer1->SetVisAttributes(visAttributes);
@@ -272,7 +272,7 @@ void DetectorConstruction::ConstructTarget(G4double layer_thickness, G4double ou
   logictarlayer3->SetVisAttributes(visAttributes);
   logictarget->SetVisAttributes(visAttributes);
   fVisAttributes.push_back(visAttributes);
-     
+
   visAttributes = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   visAttributes->SetVisibility(false);
   logictar->SetVisAttributes(visAttributes);
@@ -300,7 +300,7 @@ void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4d
                     "magneticPhysical",worldLogical,
                     false,0,checkOverlaps);
 
-  // set step limit in tube with magnetic field  
+  // set step limit in tube with magnetic field
   G4UserLimits* userLimits = new G4UserLimits(0.1*m);
   fMagneticLogical->SetUserLimits(userLimits);
 
@@ -309,10 +309,10 @@ void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4d
   fVisAttributes.push_back(visAttributes);
 
 }
-void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double detectZ, G4double detsinR, 
+void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double detectZ, G4double detsinR,
                                           G4double detcosR, G4int nofLayersZ, G4double rotTheta,
                                           std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical)
-{  
+{
   G4bool checkOverlaps = fcheckOverlaps;
   G4int nofLayers = fnofLayers;
   G4Material* polyeth = detectMat[0];
@@ -329,7 +329,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
 
 
   G4VSolid* box1 = new G4Box("Box #1",detectXY,detectXY,detectZ);
-  G4VSolid* box2 = new G4Box("Box #2",detectINXY,detectINXY,detectZ); 
+  G4VSolid* box2 = new G4Box("Box #2",detectINXY,detectINXY,detectZ);
 
   G4VSolid* scintSolid = new G4SubtractionSolid("Schield", box1, box2);
   //G4VSolid* scintCalorimeterSolid = new G4Box("scintCalorimeterBox", detectXY, detectXY, detectZ);
@@ -338,7 +338,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
   new G4PVPlacement(fieldRotDet,detectplace,scintLogical,
                     "scintPhysical",worldLogical,
                     false,0,checkOverlaps);
-  
+
   // scintillator calorimeter column
   G4VSolid* scintColumnSolid
     = new G4Box("scintColumnBox", detectXY/nofLayers, detectXY,detectZ);
@@ -346,7 +346,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
     = new G4LogicalVolume(scintColumnSolid,vacuum,"scintColumnLogical");
   new G4PVReplica("scintColumnPhysical",scintColumnLogical,
                   scintLogical,kXAxis, nofLayers, 2*detectXY/nofLayers);
-  
+
   // scintillator calorimeter row
   G4VSolid* scintRowSolid
     = new G4Box("scintRowBox",detectXY/nofLayers, detectXY/nofLayers, detectZ);
@@ -354,7 +354,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
     = new G4LogicalVolume(scintRowSolid,vacuum,"scintRowLogical");
   new G4PVReplica("scintRowPhysical",scintRowLogical,
                   scintColumnLogical,kYAxis, nofLayers, 2*detectXY/nofLayers);
-  
+
   // scintillator calorimeter cell
   G4VSolid* scintCellSolid
     = new G4Box("scintCellBox",detectXY/nofLayers, detectXY/nofLayers, detectZ/nofLayersZ);
@@ -362,8 +362,8 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
     = new G4LogicalVolume(scintCellSolid,vacuum,"scintCellLogical");
   new G4PVReplica("scintCellPhysical",scintCellLogical,
                   scintRowLogical,kZAxis, nofLayersZ, 2*detectZ/nofLayersZ);
-  
-  // scintillator lead plates 
+
+  // scintillator lead plates
   /*G4VSolid* scintLeadSolid
     = new G4Box("scintLeadBox",detectXY/nofLayers, detectXY/nofLayers, leadThickness);
   G4LogicalVolume* scintLeadLogical
@@ -372,7 +372,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
                     "scintLeadPhysical",scintCellLogical,
                     false,0,checkOverlaps);*/
 
-  // scintillator scint plates 
+  // scintillator scint plates
   G4VSolid* scintScintSolid
     = new G4Box("scintScintBox",detectXY/nofLayers, detectXY/nofLayers, scintplateThick);
   //G4LogicalVolume* scintScintLogical
@@ -385,7 +385,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
 
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
   visAttributes->SetVisibility(false);
-  scintLogical->SetVisAttributes(visAttributes); 
+  scintLogical->SetVisAttributes(visAttributes);
   scintColumnLogical->SetVisAttributes(visAttributes);
   scintRowLogical->SetVisAttributes(visAttributes);
   scintCellLogical->SetVisAttributes(visAttributes);

@@ -71,11 +71,6 @@ void DetectorConstruction::DefineMaterials()
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
 
-  // Liquid Hydrogen
-  G4Element* H  = new G4Element("Hydrogen" ,"H" , z= 1., a=   2.02*g/mole);
-  G4Material* H2l = new G4Material("H2liquid", density= 70.85*kg/m3, ncomponents=1);
-  H2l->AddElement(H, natoms=2);
-
   // Print materials
   // G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
@@ -86,7 +81,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 {
 
   G4Material* defaultMaterial = G4Material::GetMaterial("Galactic");
-  G4Material* lH2 = G4Material::GetMaterial("H2liquid");
+  G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
   // G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
   G4Material* tarwall_mat;
   G4Material* tarwind_mat;
@@ -115,7 +110,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   // Mother Target
   //
   G4double wall_thickness = 100*um;
-  G4double window_thickness = 10000*um;
+  G4double window_thickness = 10*um;
 
   G4double outRlay1 = 2.5*cm;
   G4double hz = 10*cm;
