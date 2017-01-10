@@ -5,53 +5,81 @@
 #include "TCanvas.h"
 #include "TFile.h"
 //#include ROOT
-int joinhist()
+int joinPR()
 {
-	std::string endfile ("NuOffMagnet.root");
-	int n = 4;
-	Double_t column_var_n;  
-	Double_t row_var_n; 
-	std::string start ("Project_t");
-	std::string ending (".root");
-	std::string number;
-	std::string input;
+	TString endfile;
+	Double_t events;
+	cin >> events;
+	cin >> endfile;
+	cout << events << endl;
+	cout << endfile << endl;
+	// std::string endfile ("NuOffMagnet.root");
+	int n = 8;
+	// Double_t events = TMath::Power(10, 6);
+	Double_t rate = (100*TMath::Power(10, -6))/(208*events*1.602*TMath::Power(10, -19));
 
-	TH1F *neDCn = new TH1F("ColumnDn", "Particles Distribution",40,0,40);
-	TH1F *neDRn = new TH1F("RowDn", "Particles Distribution",40,0,40);
+	Double_t energy_var_n;
+	Double_t time_var_n;
+	Double_t vertexz_var_n;
+	Char_t process_var_n;
 
-	TH2F *ne2DN = new TH2F("Neutron", "Particles Distribution",40,0,40,40,0,40);
+	TString start = TString("Project_t");
+	TString ending = TString(".root");
 
-	//TTree treeDe("d0e","Electron");
-    //treeDe.Branch("RowID", &row_var_e, "RowID/D");
-    //treeDe.Branch("ColumnID", &column_var_e, "ColumnID/D");
-	for (int i = 0; i < n; i++) {
-		number = std::to_string(i);
-		input = start + number + ending;
+	TH1D *neDEn = new TH1D("Energy", "Particles Distribution",80,0,110);
+	TH1D *neDT = new TH1D("Time", "Particles Distribution",80,0,200);
+	TH1D *neDVZ = new TH1D("VertexPositionZ", "Particles Distribution",80,0,500);
+	TH1D *neDPr = new TH1D("Process", "Particles Distribution",10,0,10);
+
+	Int_t j;
+	for (int j = 0; j < n; j++) {
+		TString number = "";
+		number += j;
+		TString input = start + number + ending;
 		cout << input << endl;
 
-		const char *inputfile = input.c_str();
-
-		TFile file0(inputfile);
-		TTree *treeD0n; file0.GetObject("d0n",treeD0n);
+		TFile file0(input);
+		TTree *treeD0n; file0.GetObject("Hits",treeD0n);
 
 		Int_t nentries0n = Int_t(treeD0n->GetEntries());
-		treeD0n->SetBranchAddress("ColumnID",&column_var_n);
-		treeD0n->SetBranchAddress("RowID",&row_var_n);
+		treeD0n->SetBranchAddress("Energy",&energy_var_n);
+		treeD0n->SetBranchAddress("Time",&time_var_n);
+		treeD0n->SetBranchAddress("VertexPositionZ",&vertexz_var_n);
+		treeD0n->SetBranchAddress("Process",&process_var_n);
 		for (Int_t i=0; i<nentries0n; i++) {
 			treeD0n->GetEntry(i);
-			neDCn->Fill(column_var_n);
-			neDRn->Fill(row_var_n);
-			ne2DN->Fill(row_var_n,column_var_n);
+			neDEn->Fill(energy_var_n);
+			neDT->Fill(time_var_n);
+			neDVZ->Fill(vertexz_var_n);
+			neDPr->Fill(&process_var_n,1);
 		}
 	}
 
-	TFile fnew(endfile.c_str(),"recreate");
+	neDEn->Scale(rate);
+	neDT->Scale(rate);
+	neDVZ->Scale(rate);
+	neDPr->Scale(rate);
 
-	neDCn->Write(); 
-	neDRn->Write(); 
+	neDEn->SetXTitle("Energy [MeV]");
+	neDEn->SetYTitle("Rate [s^{-1}]");
 
-	ne2DN->Write(); 
+	neDT->SetXTitle("Time [ns]");
+	neDT->SetYTitle("Rate [s^{-1}]");
+
+	neDVZ->SetXTitle("Vertex Position Z [nm]");
+	neDVZ->SetYTitle("Rate [s^{-1}]");
+
+	neDPr->SetXTitle("Process name");
+	neDPr->SetYTitle("Rate [s^{-1}]");
+
+
+	TFile fnew(endfile,"recreate");
+
+	neDEn->Write();
+	neDT->Write();
+	neDVZ->Write();
+	neDPr->Write();
+
 	fnew.Close();
 	return 0;
 }
-

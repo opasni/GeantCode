@@ -15,7 +15,7 @@ class MyPhysicsList : public G4VModularPhysicsList
 {
 public:
 
-  MyPhysicsList(G4String bremm);
+  MyPhysicsList(G4String invbeta);
   virtual ~MyPhysicsList();
 
   virtual void ConstructParticle();
@@ -44,7 +44,7 @@ private:
   G4ElectronNuclearProcess * theElectronNuclearProcess;
   InverseBetaModel * theElectroReaction;
 
-  G4String fbremm;
+  G4String finvbeta;
 
 };
 

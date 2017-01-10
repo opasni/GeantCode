@@ -26,8 +26,8 @@
 #include "G4LossTableManager.hh"
 #include "G4ProcessManager.hh"
 
-MyPhysicsList::MyPhysicsList(G4String bremm)
- : fbremm(bremm)
+MyPhysicsList::MyPhysicsList(G4String invbeta)
+ : finvbeta(invbeta)
 {
   G4LossTableManager::Instance();
   defaultCutValue = 0.7*mm;
@@ -66,7 +66,7 @@ void MyPhysicsList::ConstructParticle()
 
 void MyPhysicsList::ConstructProcess()
 {
-  InverseBetaProcess();
+  if (finvbeta == "yes") InverseBetaProcess();
 
   AddTransportation();
 

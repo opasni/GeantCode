@@ -54,6 +54,9 @@ set(PROJECT3_SCRIPTS
   runT.mac
   joinPR.c
   vis.mac
+  script.sh
+  InvBetaOff
+  InvBetaOn
   )
 
 foreach(_script ${PROJECT3_SCRIPTS})

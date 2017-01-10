@@ -47,8 +47,9 @@ int main(int argc,char** argv)
   // G4PhysListFactory factory;
   G4VModularPhysicsList* phys = 0;
 
-
-  phys = new MyPhysicsList("yes");
+  G4String invbeta;
+  G4cin >> invbeta;
+  phys = new MyPhysicsList(invbeta);
 
   phys->SetVerboseLevel(1);
   runManager->SetUserInitialization(phys);
