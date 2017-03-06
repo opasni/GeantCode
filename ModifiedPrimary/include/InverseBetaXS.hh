@@ -31,17 +31,14 @@ public:
   // Body
 private:
 
-    G4double GetParAXS(G4double energyE);
-    G4double GetParBXS(G4double energyE);
-
     const G4double M; // Mean mass of nucleai
-
+    
     G4NistManager* nistmngr;
-
-    // Cache values for XS
+        
+    //Cache values for XS
     G4double lastE ; // Last used energy value
     G4double lastSig; //Last used XS value
-
+    
     };
 
 #endif
