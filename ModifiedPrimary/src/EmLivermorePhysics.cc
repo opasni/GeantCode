@@ -1,4 +1,31 @@
-#include "EmLivermorePhysics.hh"
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  Geant4 software  is  copyright of the Copyright Holders  of *
+// * the Geant4 Collaboration.  It is provided  under  the terms  and *
+// * conditions of the Geant4 Software License,  included in the file *
+// * LICENSE and available at  http://cern.ch/geant4/license .  These *
+// * include a list of copyright holders.                             *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GEANT4 collaboration.                      *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the Geant4 Software license.          *
+// ********************************************************************
+//
+// $Id: G4EmLivermorePhysics.cc 99938 2016-10-12 08:06:52Z gcosmo $
+
+#include "G4EmLivermorePhysics.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -14,7 +41,7 @@
 #include "G4GammaConversion.hh"
 #include "G4LivermoreGammaConversionModel.hh"
 
-#include "G4RayleighScattering.hh"
+#include "G4RayleighScattering.hh" 
 #include "G4LivermoreRayleighModel.hh"
 
 // e+-
@@ -94,23 +121,23 @@
 // factory
 #include "G4PhysicsConstructorFactory.hh"
 //
-G4_DECLARE_PHYSCONSTR_FACTORY(EmLivermorePhysics);
-
+G4_DECLARE_PHYSCONSTR_FACTORY(G4EmLivermorePhysics);
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EmLivermorePhysics::EmLivermorePhysics(G4int ver)
-  : G4VPhysicsConstructor("EmLivermorePhysics"), verbose(ver)
+G4EmLivermorePhysics::G4EmLivermorePhysics(G4int ver, const G4String&)
+  : G4VPhysicsConstructor("G4EmLivermore"), verbose(ver)
 {
   G4EmParameters* param = G4EmParameters::Instance();
   param->SetDefaults();
   param->SetVerbose(verbose);
   param->SetMinEnergy(100*eV);
-  param->SetMaxEnergy(10*TeV);
+  param->SetMaxEnergy(1*TeV);
   param->SetLowestElectronEnergy(100*eV);
   param->SetNumberOfBinsPerDecade(20);
   param->ActivateAngularGeneratorForIonisation(true);
   param->SetMscRangeFactor(0.02);
+  param->SetMuHadLateralDisplacement(true);
   param->SetMscStepLimitType(fUseDistanceToBoundary);
   param->SetFluo(true);
   SetPhysicsType(bElectromagnetic);
@@ -118,31 +145,12 @@ EmLivermorePhysics::EmLivermorePhysics(G4int ver)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EmLivermorePhysics::EmLivermorePhysics(G4int ver, const G4String&)
-  : G4VPhysicsConstructor("EmLivermorePhysics"), verbose(ver)
-{
-  G4EmParameters* param = G4EmParameters::Instance();
-  param->SetDefaults();
-  param->SetVerbose(verbose);
-  param->SetMinEnergy(100*eV);
-  param->SetMaxEnergy(10*TeV);
-  param->SetLowestElectronEnergy(100*eV);
-  param->SetNumberOfBinsPerDecade(20);
-  param->ActivateAngularGeneratorForIonisation(true);
-  param->SetMscRangeFactor(0.02);
-  param->SetMscStepLimitType(fUseDistanceToBoundary);
-  param->SetFluo(true);
-  SetPhysicsType(bElectromagnetic);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-EmLivermorePhysics::~EmLivermorePhysics()
+G4EmLivermorePhysics::~G4EmLivermorePhysics()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EmLivermorePhysics::ConstructParticle()
+void G4EmLivermorePhysics::ConstructParticle()
 {
   // gamma
   G4Gamma::Gamma();
@@ -169,15 +177,11 @@ void EmLivermorePhysics::ConstructParticle()
   G4He3::He3();
   G4Alpha::Alpha();
   G4GenericIon::GenericIonDefinition();
-
-  // dna
-  G4EmModelActivator mact;
-  mact.ConstructParticle();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EmLivermorePhysics::ConstructProcess()
+void G4EmLivermorePhysics::ConstructProcess()
 {
   if(verbose > 1) {
     G4cout << "### " << GetPhysicsName() << " Construct Processes " << G4endl;
@@ -212,11 +216,12 @@ void EmLivermorePhysics::ConstructProcess()
   G4NuclearStopping* pnuc = new G4NuclearStopping();
 
   // Add Livermore EM Processes
-  aParticleIterator->reset();
+  auto myParticleIterator=GetParticleIterator();
+  myParticleIterator->reset();
 
-  while( (*aParticleIterator)() ){
-
-    G4ParticleDefinition* particle = aParticleIterator->value();
+  while( (*myParticleIterator)() ){
+  
+    G4ParticleDefinition* particle = myParticleIterator->value();
     G4String particleName = particle->GetParticleName();
 
     if (particleName == "gamma") {
@@ -251,28 +256,28 @@ void EmLivermorePhysics::ConstructProcess()
       msc->AddEmModel(0, msc1);
       msc->AddEmModel(0, msc2);
 
-      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel();
+      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel(); 
       G4CoulombScattering* ss = new G4CoulombScattering();
-      ss->SetEmModel(ssm, 1);
+      ss->SetEmModel(ssm, 1); 
       ss->SetMinKinEnergy(highEnergyLimit);
       ssm->SetLowEnergyLimit(highEnergyLimit);
       ssm->SetActivationLowEnergyLimit(highEnergyLimit);
-
+      
       // Ionisation - Livermore should be used only for low energies
       G4eIonisation* eIoni = new G4eIonisation();
       G4LivermoreIonisationModel* theIoniLivermore = new
         G4LivermoreIonisationModel();
-      theIoniLivermore->SetHighEnergyLimit(0.1*MeV);
+      theIoniLivermore->SetHighEnergyLimit(0.1*MeV); 
       eIoni->AddEmModel(0, theIoniLivermore, new G4UniversalFluctuation() );
-      eIoni->SetStepFunction(0.2, 100*um); //
-
+      eIoni->SetStepFunction(0.2, 100*um); //     
+      
       // Bremsstrahlung
       G4eBremsstrahlung* eBrem = new G4eBremsstrahlung();
       G4VEmModel* theBremLivermore = new G4LivermoreBremsstrahlungModel();
       theBremLivermore->SetHighEnergyLimit(1*GeV);
       theBremLivermore->SetAngularDistribution(new G4Generator2BS());
       eBrem->SetEmModel(theBremLivermore,1);
-
+     
       // register processes
       ph->RegisterProcess(msc, particle);
       ph->RegisterProcess(eIoni, particle);
@@ -290,16 +295,16 @@ void EmLivermorePhysics::ConstructProcess()
       msc->AddEmModel(0, msc1);
       msc->AddEmModel(0, msc2);
 
-      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel();
+      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel(); 
       G4CoulombScattering* ss = new G4CoulombScattering();
-      ss->SetEmModel(ssm, 1);
+      ss->SetEmModel(ssm, 1); 
       ss->SetMinKinEnergy(highEnergyLimit);
       ssm->SetLowEnergyLimit(highEnergyLimit);
       ssm->SetActivationLowEnergyLimit(highEnergyLimit);
 
       // ionisation
       G4eIonisation* eIoni = new G4eIonisation();
-      eIoni->SetStepFunction(0.2, 100*um);
+      eIoni->SetStepFunction(0.2, 100*um);      
 
       // register processes
       ph->RegisterProcess(msc, particle);
@@ -312,7 +317,7 @@ void EmLivermorePhysics::ConstructProcess()
                particleName == "mu-"    ) {
 
       G4MuIonisation* muIoni = new G4MuIonisation();
-      muIoni->SetStepFunction(0.2, 50*um);
+      muIoni->SetStepFunction(0.2, 50*um);          
 
       ph->RegisterProcess(mumsc, particle);
       ph->RegisterProcess(muIoni, particle);
@@ -322,7 +327,7 @@ void EmLivermorePhysics::ConstructProcess()
 
     } else if (particleName == "alpha" ||
                particleName == "He3" ) {
-
+      
       G4hMultipleScattering* msc = new G4hMultipleScattering();
       G4ionIonisation* ionIoni = new G4ionIonisation();
       ionIoni->SetStepFunction(0.1, 10*um);
@@ -332,7 +337,7 @@ void EmLivermorePhysics::ConstructProcess()
       ph->RegisterProcess(pnuc, particle);
 
     } else if (particleName == "GenericIon") {
-
+      
       G4ionIonisation* ionIoni = new G4ionIonisation();
       ionIoni->SetEmModel(new G4IonParametrisedLossModel());
       ionIoni->SetStepFunction(0.1, 1*um);
@@ -408,13 +413,13 @@ void EmLivermorePhysics::ConstructProcess()
                particleName == "triton" ||
                particleName == "xi_c+" ||
                particleName == "xi-" ) {
-
+      
       ph->RegisterProcess(hmsc, particle);
       ph->RegisterProcess(new G4hIonisation(), particle);
       ph->RegisterProcess(pnuc, particle);
     }
   }
-
+    
   // Nuclear stopping
   pnuc->SetMaxKinEnergy(MeV);
 
@@ -423,8 +428,7 @@ void EmLivermorePhysics::ConstructProcess()
   G4VAtomDeexcitation* de = new G4UAtomicDeexcitation();
   G4LossTableManager::Instance()->SetAtomDeexcitation(de);
 
-  G4EmModelActivator mact;
-  mact.ConstructProcess();
+  G4EmModelActivator mact(GetPhysicsName());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
