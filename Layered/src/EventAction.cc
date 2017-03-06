@@ -24,10 +24,12 @@ EventAction::EventAction(const DetectorConstruction* detectorConstruction)
     fHCHCID(-1),
     fHadCalEdep(),
     fscintDetails(detectorConstruction->GetScintPosition()),
-    nofLayers(detectorConstruction->GetNumberOfLayers())
+    nofLayers(detectorConstruction->GetNumberOfLayers()),
+    nofLayersZ(detectorConstruction->GetNumberOfLayersZ())
 {
+  // G4cout << nofLayers << ' ' << nofLayersZ << G4endl;
   G4RunManager::GetRunManager()->SetPrintProgress(1);
-  fHadCalEdep.resize(nofLayers*nofLayers, 0.);
+  fHadCalEdep.resize(nofLayers*nofLayers*nofLayersZ, 0.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,12 +67,12 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
     // Get analysis manager
     G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-    //G4int nmid = (nofLayers/2);
 
     // HCEnergy
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
-    for (G4int i=0;i<nofLayers*nofLayers;i++)
+
+    for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
         HadCalorimeterHit* hit = (*hcHC)[i];
         G4double eDep = hit->GetEdep();
@@ -79,26 +81,34 @@ void EventAction::EndOfEventAction(const G4Event* event)
           G4int layerNo = hit->GetRowID();
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
-          G4String proc = hit->GetProcess();
-          G4String name = hit->GetName();
-          //if ((pos[0]<100) && (pos[0]>=-100) && (pos[1]<100) && (pos[1]>=-100)) G4int a;
-          //if ((posX<100) && (posX>=-100) && (posY<100) && (posY>=-100)) G4int a;
-          //else    {
-          analysisManager->FillNtupleDColumn(1, dtime);
-          analysisManager->FillNtupleDColumn(2, pos[2]-fscintDetails);
-          analysisManager->FillNtupleIColumn(3, layerNo);
-          analysisManager->FillNtupleSColumn(4, proc);
-          analysisManager->FillNtupleSColumn(5, name);
+          // G4String proc = hit->GetProcess();
+          // G4String name = hit->GetName();
+          if (dtime > 40) {
+            analysisManager->FillNtupleDColumn(0, eDep);
+            analysisManager->FillNtupleDColumn(1, dtime);
+            analysisManager->FillNtupleDColumn(2, pos[2]-fscintDetails);
+            analysisManager->FillNtupleIColumn(3, layerNo);
+            analysisManager->AddNtupleRow();
+          }
+          analysisManager->FillH1(2, eDep);
+          analysisManager->FillH1(3, dtime);
+          analysisManager->FillH1(4, layerNo);
+          analysisManager->FillH2(1, eDep, layerNo);
+          analysisManager->FillH2(2, eDep, dtime);
+          analysisManager->FillH2(3, dtime, layerNo);
+          if (eDep/MeV > 20) analysisManager->FillH2(4, dtime, layerNo);
           totalHadHit++;
           totalHadE += eDep;
             //}
         }
-        fHadCalEdep[i] = eDep;
+        fHadCalEdep[i] = totalHadE;
+        analysisManager->FillH1(1, totalHadE);
     }
-    if (totalHadE != 0.){
-        analysisManager->FillNtupleDColumn(0, totalHadE/MeV);
-        analysisManager->AddNtupleRow();
-    }
+    // if (totalHadE != 0.){
+    //     G4cout << totalHadE/MeV << G4endl;
+    //     // analysisManager->FillNtupleDColumn(0, totalHadE/MeV);
+    //     // analysisManager->AddNtupleRow();
+    // }
     //
     // Print diagnostics
     //

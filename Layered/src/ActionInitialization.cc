@@ -22,7 +22,7 @@ ActionInitialization::~ActionInitialization()
 void ActionInitialization::BuildForMaster() const
 {
   EventAction* eventAction = 0;
-  SetUserAction(new RunAction(eventAction, fDetConstruction->GetNumberOfLayers()));
+  SetUserAction(new RunAction(eventAction));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -33,7 +33,7 @@ void ActionInitialization::Build() const
   SetUserAction(eventAction);
 
   SetUserAction(new PrimaryGeneratorAction);
-  SetUserAction(new RunAction(eventAction, fDetConstruction->GetNumberOfLayers()));
+  SetUserAction(new RunAction(eventAction));
 
   SetUserAction(new SteppingAction(fDetConstruction));
 }

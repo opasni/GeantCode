@@ -16,7 +16,7 @@ class G4Run;
 class RunAction : public G4UserRunAction
 {
   public:
-    RunAction(EventAction* eventAction, G4int fnofLayers);
+    RunAction(EventAction* eventAction);
     virtual ~RunAction();
 
     virtual void BeginOfRunAction(const G4Run*);
@@ -25,7 +25,6 @@ class RunAction : public G4UserRunAction
   private:
 
     EventAction* fEventAction;
-    G4int nofLayers;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
