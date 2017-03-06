@@ -23,7 +23,7 @@ static const G4double muP = 2.793;
 
 InverseBetaModel::InverseBetaModel()
   : G4HadronicInteraction("InverseBetaModel"),
-   M((G4NucleiProperties::GetNuclearMass(1,0) + G4NucleiProperties::GetNuclearMass(1,1))/2)
+   M((G4NucleiProperties::GetNuclearMass(1,0)/GeV + G4NucleiProperties::GetNuclearMass(1,1)/GeV)/2)
 {
   SetMinEnergy(0.0);
   SetMaxEnergy(1*TeV);
@@ -48,7 +48,7 @@ G4HadFinalState*
 InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
 {
 
-  G4double energyE = aTrack.GetKineticEnergy(); // Electron energy
+  G4double energyE = aTrack.GetKineticEnergy()/GeV; // Electron energy
   G4ThreeVector momentE = aTrack.Get4Momentum().vect().unit(); // Electron  momentum direction
 
   G4double theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
@@ -148,7 +148,7 @@ void InverseBetaModel::CalculateVert(G4double theta, G4ThreeVector momentE, G4do
 
   momL.rotateUz(momentE); // Rotation according to initial electron momentum
 
-  G4double KinEnL = mLep; // Kinetic energy of neutron
+  G4double KinEnL = mLep*GeV; // Kinetic energy of neutron
 
   G4ThreeVector momN;
     momN.setX(mN * std::sin(thN) * std::sin(phi));
@@ -157,8 +157,8 @@ void InverseBetaModel::CalculateVert(G4double theta, G4ThreeVector momentE, G4do
 
   momN.rotateUz(momentE); // Rotation according to initial electron momentum
 
-  G4double KinEnN = enerN - M; // Kinetic energy of neutron
-  //G4cout << "Kineticna energija neutrona: " << KinEnNe/MeV << G4endl;
+  G4double KinEnN = (enerN - M)*GeV; // Kinetic energy of neutron
+
   // Particles definitions
 
   G4DynamicParticle* theNeutrino = new G4DynamicParticle;
