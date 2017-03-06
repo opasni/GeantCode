@@ -32,24 +32,20 @@ public:
                         G4double target_posz, std::vector<G4Material*> tarMat,
                         G4Material* lH2, G4LogicalVolume* worldLogical);
 
-    void ConstructMagnet(G4double magZR, G4double magsinR, G4double magcosR,
+    void ConstructMagnet(G4double magZR, G4double magposZ,
                         G4Material* vacuum, G4LogicalVolume* worldLogical);
 
     void ConstructScintillator(G4double detectXY, G4double detectINXY, G4double detectZ,
-                        G4double detsinR, G4double detcosR,  G4double scieldthick, G4int nofLayersZ,
-                        G4double rotTheta, std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical);
+                        G4double detposZ, G4double scieldthick,
+                        std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical);
 
-    void ConstructSchield1(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
-                        G4double schsinR,G4double schcosR, G4double rotTheta,
-                        G4Material* lead, G4LogicalVolume* worldLogical);
-
-    void ConstructSchield2(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
-                        G4double schsinR, G4double schcosR, G4double rotTheta,
-                        G4Material* lead, G4LogicalVolume* worldLogical);
+    void ConstructSchield(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
+                        G4double schposZ, G4Material* lead, G4LogicalVolume* worldLogical);
 
     void ConstructMaterials();
 
     G4int GetNumberOfLayers() const;
+    G4int GetNumberOfLayersZ() const;
     G4double GetScintPosition() const;
 
     const G4VPhysicalVolume* GetAbsorberPV() const;
@@ -71,6 +67,7 @@ private:
     std::vector<G4VisAttributes*> fVisAttributes;
 
     G4int fnofLayers;
+    G4int fnofLayersZ;
     G4double fscintDetails;
 
 };
@@ -79,6 +76,10 @@ private:
 
 inline G4int DetectorConstruction::GetNumberOfLayers() const {
     return fnofLayers;
+}
+
+inline G4int DetectorConstruction::GetNumberOfLayersZ() const {
+    return fnofLayersZ;
 }
 
 inline G4double DetectorConstruction::GetScintPosition() const {

@@ -1,7 +1,6 @@
 #include "DetectorConstruction.hh"
 #include "MagneticField.hh"
 #include "HadCalorimeterSD.hh"
-#include "Parameterisation.hh"
 
 #include "G4FieldManager.hh"
 #include "G4TransportationManager.hh"
@@ -51,7 +50,8 @@ DetectorConstruction::DetectorConstruction()
   fscintScintLogical(0),
   fMagneticLogical(0),
   fVisAttributes(),
-  fnofLayers(20)
+  fnofLayers(20),
+  fnofLayersZ(3)
 {
 }
 
@@ -129,15 +129,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Tube with Local Magnetic field
   //
 
-  G4double rotTheta = 0.; // Specify rotation of magnetic tube and detector
-
   G4double magZR = 0.25*m;
   G4double magR = -0.5*world_sizeZ+0.5*magZR+0.5*hz+window_thickness+10*cm;
 
-  G4double magsinR = (magR-target_posz)*sin(rotTheta);
-  G4double magcosR = (magR-target_posz)*cos(rotTheta)+target_posz;
+  G4double magposZ = (magR-target_posz)+target_posz;
 
-  ConstructMagnet(magZR, magsinR, magcosR, vacuum, worldLogical);
+  ConstructMagnet(magZR, magposZ, vacuum, worldLogical);
 
   //
   // Hadron Scintillator
@@ -152,13 +149,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double detectTarDist = 2.5*m;
   G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
   fscintDetails = detectR - detectZ;
-  G4double detsinR = (detectR-target_posz)*sin(rotTheta);
-  G4double detcosR = (detectR-target_posz)*cos(rotTheta)+target_posz;
 
-  G4int nofLayersZ = 3;
+  G4double detpodZ = (detectR-target_posz)+target_posz;
 
-  ConstructScintillator(detectXY, detectINXY, detectZ, detsinR, detcosR,
-                        0.5*schieldthickness, nofLayersZ, rotTheta, detectMat, worldLogical);
+  ConstructScintillator(detectXY, detectINXY, detectZ, detpodZ, 0.5*schieldthickness, detectMat, worldLogical);
 
   //
   // Schield
@@ -170,24 +164,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4double schieldR = -0.5*world_sizeZ+detectTarDist+detectZ;
 
-  G4double schsinR = (schieldR-target_posz)*sin(rotTheta);
-  G4double schcosR = (schieldR-target_posz)*cos(rotTheta)+target_posz;
+  G4double schposZ = (schieldR-target_posz)+target_posz;
 
-  ConstructSchield2(schieldXY, schieldINXY, schieldZ, schsinR, schcosR, rotTheta,
-                        lead, worldLogical);
-
-  /*schieldXY = detectXY;
-  schieldINXY = detectINXY;
-  schieldZ = 0.5*schieldthickness;
-
-  G4double schieldDetDist = 0.001*m;
-  schieldR = -0.5*world_sizeZ+detectTarDist-schieldDetDist-schieldZ;
-
-  schsinR = (schieldR-target_posz)*sin(rotTheta);
-  schcosR = (schieldR-target_posz)*cos(rotTheta)+target_posz;
-
-  ConstructSchield1(schieldXY, schieldINXY, schieldZ, schsinR, schcosR, rotTheta,
-                        lead, worldLogical);*/
+  ConstructSchield(schieldXY, schieldINXY, schieldZ, schposZ, lead, worldLogical);
 
 
   //
@@ -213,7 +192,7 @@ void DetectorConstruction::ConstructSDandField()
   G4String SDname;
 
   G4VSensitiveDetector* hadCalorimeter
-    = new HadCalorimeterSD(SDname="/HadCalorimeter", fnofLayers);
+    = new HadCalorimeterSD(SDname="/HadCalorimeter", fnofLayers, fnofLayersZ);
   SDman->AddNewDetector(hadCalorimeter);
   fscintScintLogical->SetSensitiveDetector(hadCalorimeter);
 
@@ -312,13 +291,11 @@ void DetectorConstruction::ConstructTarget(G4double wall_thickness,G4double wind
   fVisAttributes.push_back(visAttributes);
 }
 
-void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4double magcosR,
+void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magposZ,
                                           G4Material* vacuum, G4LogicalVolume* worldLogical)
 {
   G4bool checkOverlaps = fcheckOverlaps;
-  G4ThreeVector magplace = G4ThreeVector(magsinR,0.,magcosR);
-  G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
-  fieldRotMag->rotateX(pi/2);
+  G4ThreeVector magplace = G4ThreeVector(0.,0.,magposZ);
 
 
   //G4VSolid* magneticSolid
@@ -327,8 +304,8 @@ void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4d
     = new G4Box("World", 0.5*magZR, 0.5*magZR, 0.5*magZR);
   fMagneticLogical = new G4LogicalVolume(magneticSolid, vacuum, "magneticLogical");
 
-  //G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
-  //fieldRotMag->rotateX(90.*deg);
+  G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
+  fieldRotMag->rotateX(90.*deg);
   fMagnetPV = new G4PVPlacement(fieldRotMag,magplace,fMagneticLogical,
                     "magneticPhysical",worldLogical,
                     false,0,checkOverlaps);
@@ -342,21 +319,18 @@ void DetectorConstruction::ConstructMagnet(G4double magZR, G4double magsinR, G4d
   fVisAttributes.push_back(visAttributes);
 
 }
-void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double detectINXY, G4double detectZ,
-                                          G4double detsinR, G4double detcosR, G4double leadThickness, G4int nofLayersZ,
-                                          G4double rotTheta, std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical)
+void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double detectINXY, G4double detectZ, G4double detposZ,
+                            G4double leadThickness, std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical)
 {
   G4bool checkOverlaps = fcheckOverlaps;
   G4int nofLayers = fnofLayers;
+  G4int nofLayersZ = fnofLayersZ;
   G4Material* polyeth = detectMat[0];
   G4Material* vacuum = detectMat[1];
   G4Material* lead = detectMat[2];
   G4double scintplateThick = (detectZ/nofLayersZ - leadThickness);
 
-  G4ThreeVector detectplace = G4ThreeVector(detsinR,0.,detcosR);
-  G4RotationMatrix* fieldRotDet = new G4RotationMatrix();
-  fieldRotDet->rotateY(-rotTheta);
-
+  G4ThreeVector detectplace = G4ThreeVector(0.,0.,detposZ);
 
   G4VSolid* box1 = new G4Box("Box #1",detectXY,detectXY,detectZ);
   G4VSolid* box2 = new G4Box("Box #2",detectINXY,detectINXY,detectZ);
@@ -365,7 +339,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
   //G4VSolid* scintCalorimeterSolid = new G4Box("scintCalorimeterBox", detectXY, detectXY, detectZ);
   G4LogicalVolume* scintLogical
     = new G4LogicalVolume(scintSolid,vacuum,"scintLogical");
-  new G4PVPlacement(fieldRotDet,detectplace,scintLogical,
+  new G4PVPlacement(0,detectplace,scintLogical,
                     "scintPhysical",worldLogical,
                     false,0,checkOverlaps);
 
@@ -432,16 +406,11 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
 
 }
 
-void DetectorConstruction::ConstructSchield1(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
-                                          G4double schsinR, G4double schcosR, G4double rotTheta,
-                                          G4Material* lead, G4LogicalVolume* worldLogical)
+void DetectorConstruction::ConstructSchield(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
+                                          G4double schposZ, G4Material* lead, G4LogicalVolume* worldLogical)
 {
   G4bool checkOverlaps = fcheckOverlaps;
-  // G4double schieldINXY = 0.090000001*m;
-  G4ThreeVector schplace = G4ThreeVector(schsinR,0.,schcosR);
-  G4RotationMatrix* fieldRotDet = new G4RotationMatrix();
-  fieldRotDet->rotateY(-rotTheta);
-
+  G4ThreeVector schplace = G4ThreeVector(0.,0.,schposZ);
 
   G4VSolid* boxSa1 = new G4Box("BoxSa #1",schieldXY,schieldXY,schieldZ);
   G4VSolid* boxSa2 = new G4Box("BoxSa #2",schieldINXY,schieldINXY,schieldZ);
@@ -449,7 +418,7 @@ void DetectorConstruction::ConstructSchield1(G4double schieldXY, G4double schiel
   G4VSolid* schieldSolidA = new G4SubtractionSolid("Schield Front", boxSa1, boxSa2);
   G4LogicalVolume* schieldLogicalA
     = new G4LogicalVolume(schieldSolidA,lead,"schieldLogicalA");
-  new G4PVPlacement(fieldRotDet,schplace,schieldLogicalA,
+  new G4PVPlacement(0,schplace,schieldLogicalA,
                     "schieldPhysicalA",worldLogical,
                     false,0,checkOverlaps);
 
@@ -457,34 +426,6 @@ void DetectorConstruction::ConstructSchield1(G4double schieldXY, G4double schiel
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 0.5, 0.0));
   visAttributes->SetVisibility(true);
   schieldLogicalA->SetVisAttributes(visAttributes);
-  fVisAttributes.push_back(visAttributes);
-
-}
-
-void DetectorConstruction::ConstructSchield2(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
-                                          G4double schsinR, G4double schcosR, G4double rotTheta,
-                                          G4Material* lead, G4LogicalVolume* worldLogical)
-{
-  G4bool checkOverlaps = fcheckOverlaps;
-  G4ThreeVector schplace = G4ThreeVector(schsinR,0.,schcosR);
-  G4RotationMatrix* fieldRotDet = new G4RotationMatrix();
-  fieldRotDet->rotateY(-rotTheta);
-
-
-  G4VSolid* boxSb1 = new G4Box("BoxSb #1",schieldXY,schieldXY,schieldZ);
-  G4VSolid* boxSb2 = new G4Box("BoxSb #2",schieldINXY,schieldINXY,schieldZ);
-
-  G4VSolid* schieldSolidB = new G4SubtractionSolid("Schield Inner", boxSb1, boxSb2);
-  G4LogicalVolume* schieldLogicalB
-    = new G4LogicalVolume(schieldSolidB,lead,"schieldLogicalB");
-  new G4PVPlacement(fieldRotDet,schplace,schieldLogicalB,
-                    "schieldPhysicalB",worldLogical,
-                    false,0,checkOverlaps);
-
-
-  G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 0.5, 0.0));
-  visAttributes->SetVisibility(true);
-  schieldLogicalB->SetVisAttributes(visAttributes);
   fVisAttributes.push_back(visAttributes);
 
 }

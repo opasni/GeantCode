@@ -12,18 +12,19 @@ class G4TouchableHistory;
 /// Hadron calorimeter sensitive detector
 
 class HadCalorimeterSD : public G4VSensitiveDetector
-{    
+{
 public:
-    HadCalorimeterSD(G4String name, G4int fnofLayers);
+    HadCalorimeterSD(G4String name, G4int fnofLayers, G4int fnofLayersZ);
     virtual ~HadCalorimeterSD();
-    
+
     virtual void Initialize(G4HCofThisEvent*HCE);
     virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
-    
+
 private:
     HadCalorimeterHitsCollection* fHitsCollection;
     G4int fHCID;
     G4int nofLayers;
+    G4int nofLayersZ;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
