@@ -23,7 +23,7 @@ static const G4double weakCons =  0.03;
 
 
 InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()),
-M((G4NucleiProperties::GetNuclearMass(1,0) + G4NucleiProperties::GetNuclearMass(1,1))/2), lastE(0), lastSig(0)
+M((G4NucleiProperties::GetNuclearMass(1,0)/GeV + G4NucleiProperties::GetNuclearMass(1,1)/GeV)/2), lastE(0), lastSig(0)
 {
     nistmngr = G4NistManager::Instance();
 }
@@ -77,8 +77,6 @@ G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G
       if(lastSig<0.) lastSig = 0.;
 
       return lastSig*picobarn;
-
-      G4cout << lastSig << G4endl;
     }
   }
 }
