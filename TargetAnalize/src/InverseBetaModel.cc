@@ -14,12 +14,10 @@
 #include "G4NeutrinoE.hh"
 #include "G4Neutron.hh"
 
-static const G4double mD = 843;
-static const G4double mA = 1060;
+static const G4double mD = 0.843;
+static const G4double mA = 1.060;
 
-//static const G4double fermiG = 1.166
-
-static const G4double gA = 1.2673;
+static const G4double gAC = 1.2673;
 static const G4double muNe = -1.913;
 static const G4double muP = 2.793;
 
@@ -29,24 +27,22 @@ InverseBetaModel::InverseBetaModel()
 {
   SetMinEnergy(0.0);
   SetMaxEnergy(1*TeV);
-  electroXS = 
+  electroXS =
     (InverseBetaXS*)G4CrossSectionDataSetRegistry::Instance()->
     GetCrossSectionDataSet(InverseBetaXS::Default_Name());
-
-    
-  // Build Bertini model
-  //bert = new G4CascadeInterface();    
 }
 
 InverseBetaModel::~InverseBetaModel()
-{}    
+{}
 
 
-void InverseBetaModel::ModelDescription(std::ostream& outFile) const 
+void InverseBetaModel::ModelDescription(std::ostream& outFile) const
 {
   outFile << "InverseBetaModel handles the inverse beta process\n"
           << "of the e- on p to nu_e and n.\n";
 }
+
+///////////////////////*****************************************************///////////////////////////
 
 G4HadFinalState*
 InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
@@ -56,9 +52,9 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& target
   G4ThreeVector momentE = aTrack.Get4Momentum().vect().unit(); // Electron  momentum direction
 
   G4double theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
-    
+
   G4double sigma = CalculateProbability(theta, energyE);  // Calculate sigma(theta)/sigma(pi)
-  G4double prob = G4UniformRand(); 
+  G4double prob = G4UniformRand();
 
   // Applying actual distribution
 
@@ -68,7 +64,7 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& target
     theParticleChange.SetStatusChange(stopAndKill);
 
     CalculateVert(theta, momentE, energyE); // Calculate the final state
-    return theResult; 
+    return theResult;
   }
 
   else
@@ -83,123 +79,116 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& target
   }
 }
 
+///////////////////////*****************************************************///////////////////////////
+
 G4double InverseBetaModel::CalculateProbability(G4double theta, G4double energyE)
 {
+  G4double a, b;
+  a = GetParA(energyE);
+  b = GetParB(energyE);
 
-   // CMS kinematics
+  // Calculate Maximal Cross
 
-  G4double vCMS, gammaCMS, momentumCMS;
+  G4double Q2 = 4 * energyE*energyE/(1 + (2*energyE/M));
+  G4double tau = Q2/(4*M*M);
 
-  vCMS = 1/(1+M/energyE);
-  gammaCMS = std::sqrt(1/(1-vCMS*vCMS));
-  momentumCMS = energyE * gammaCMS*(1 - vCMS);
+  G4double GD = std::pow(1+(Q2/(mD*mD)),-2);
+  G4double gA = gAC * std::pow(1+(Q2/(mA*mA)),-2);
+  G4double gM = GD * (muP - muNe);
 
-  // Final energy of neutron (NE) and neutrino (NU) for theta and pi in CMS
+  G4double f1M, f3M;
+  f1M = gA*gA + tau * (gA*gA + gM*gM);
+  f3M = 2 * gA * gM;
 
-  G4double enerNu, enerNuMAX; 
+  G4double sigmaPI = (a*(2*f1M + f3M*(M + 2*energyE)/M) - b*f3M);
 
-  enerNu = momentumCMS * gammaCMS * (1 + vCMS * std::cos(theta));
+  // Calculate Actual Cross
 
-  enerNuMAX = momentumCMS * gammaCMS * (1 - vCMS);
+  G4double neutE = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));
+  Q2 = 4 * energyE*neutE*std::pow(std::sin(theta/2),2);
+  tau = Q2/(4*M*M);
 
-  // Sine and sine squared of scattering angle of neutrino
-
-  G4double sinTh, sinTh2;
-
-  sinTh = std::sin(0.5 * std::atan2(std::sin(theta), (gammaCMS * (vCMS + std::cos(theta)))));
-  sinTh2 = sinTh*sinTh;
-
-  // Calculation of FF for theta and pi (MAX)
-
-  G4double Q2, Q2MAX, tau, tauMAX, GD, GDMAX, GA, GAMAX, gE, gM, gMMAX;
-
-  Q2 =  4 * energyE * sinTh2 * (1 - vCMS)/(1 + vCMS);
-  Q2MAX =  4 * energyE * (1 - vCMS)/(1 + vCMS);
-
-  tau = Q2/(4 * M*M);
-  tauMAX = Q2MAX/(4 * M*M);
-
-
-  GD = std::pow(1+(Q2/(mD*mD)),-2); // Dipole FF
-  GDMAX = std::pow(1+(Q2MAX/(mD*mD)),-2);
-  GA = gA * std::pow(1+(Q2/(mA*mA)),-2); // Axial FF
-  GAMAX = gA * std::pow(1+(Q2MAX/(mA*mA)),-2);
-
-  gE = GD * (1 + (muNe * tau)/(1 + 5.6 * tau)); // Charge FF gE = gEMAX
+  GD = std::pow(1+(Q2/(mD*mD)),-2);
+  gA = gAC * std::pow(1+(Q2/(mA*mA)),-2);
+  G4double gE = GD * (1 + (muNe * tau)/(1 + 5.6 * tau));
   gM = GD * (muP - muNe);
-  gMMAX = GDMAX * (muP - muNe);
 
-  // Final FF
+  G4double f1, f2, f3;
+  f1 = gA*gA + tau * (gA*gA + gM*gM);
+  f2 = gA*gA + (gE*gE + tau * gM*gM)/(1 + tau);
+  f3 = 2 * gA * gM;
 
-  G4double form1, form1MAX, form2, form3, form3MAX;
+  G4double A = f2 + (2*f1 - f2 + f3*(M + 2*energyE)/M)*std::pow(std::sin(theta/2),2);
+  G4double B = f3*std::pow(std::sin(theta/2),2);
 
-  form1 = GA*GA + tau * (GA*GA + gM*gM);
-  form1MAX = GAMAX*GAMAX + tauMAX * (GAMAX*GAMAX + gMMAX*gMMAX);
+  G4double sigma = (a*A - b*B);
 
-  form2 = GA*GA + (gE*gE + tau * gM*gM)/(1 + tau);
-  
-  form3 = 2 * GA * gM;
-  form3MAX = 2 * GAMAX * gMMAX;
-
-  // Probability
-
-  G4double sigma, sigmapi; 
-
-  sigma = enerNu*(form2 + (2* form1 - form2 + form3 * (energyE + enerNu)/M) * sinTh2);
-  sigmapi = enerNuMAX * (2* form1MAX + form3MAX * (energyE + enerNuMAX)/M);
-
-  return (sigma/sigmapi);
+  return (sigma/sigmaPI);
 
 }
+
+///////////////////////*****************************************************///////////////////////////
 
 void InverseBetaModel::CalculateVert(G4double theta, G4ThreeVector momentE, G4double energyE)
 {
 
-    G4double phi = twopi*G4UniformRand();
+  G4double phi = twopi*G4UniformRand();
 
-   // CMS kinematics
+  G4double enerL, enerN, mLep, mN, thN;
+  enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));
+  enerN = energyE + M - enerL;
+  mLep = enerL;
+  mN = std::sqrt(enerN*enerN - M*M);
+  thN = std::asin((mLep/mN)*std::sin(theta));
 
-  G4double vCMS, gammaCMS, momentumCMS, betaNeutron;
+  G4ThreeVector momL;
+    momL.setX(mLep * std::sin(theta) * std::sin(phi));
+    momL.setY(mLep * std::sin(theta) * std::cos(phi));
+    momL.setZ(mLep * std::cos(theta));
 
-  vCMS = 1/(1+M/energyE);
-  gammaCMS = std::sqrt(1/(1-vCMS*vCMS));
-  momentumCMS = energyE * gammaCMS*(1 - vCMS); 
-  betaNeutron = momentumCMS/(std::sqrt(M*M+momentumCMS*momentumCMS));
+  momL.rotateUz(momentE); // Rotation according to initial electron momentum
 
-  // Final momentum of neutrino (Nu) and neutron (Ne)
+  G4double KinEnL = mLep; // Kinetic energy of neutron
 
-  G4ThreeVector momNu;
-    momNu.setX(momentumCMS * std::sin(theta) * std::sin(phi)); 
-    momNu.setY(momentumCMS * std::sin(theta) * std::cos(phi));
-    momNu.setZ(momentumCMS * gammaCMS * (vCMS + std::cos(theta)));
+  G4ThreeVector momN;
+    momN.setX(mN * std::sin(thN) * std::sin(phi));
+    momN.setY(mN * std::sin(thN) * std::cos(phi));
+    momN.setZ(mN * std::cos(thN));
 
-  momNu.rotateUz(momentE); // Rotation according to initial electron momentum
+  momN.rotateUz(momentE); // Rotation according to initial electron momentum
 
-  G4double kinEnNu = momentumCMS * gammaCMS * (1 + vCMS*std::cos(theta)); // Kinetic energy of neutrino
-
-  G4double nuXp = -1; G4double nuYp = -1;
-  G4ThreeVector momNe;
-    momNe.setX(nuXp * momentumCMS * std::sin(theta) * std::sin(phi)); 
-    momNe.setY(nuYp * momentumCMS * std::sin(theta) * std::cos(phi));
-    momNe.setZ(momentumCMS * gammaCMS * (vCMS/betaNeutron - std::cos(theta))); 
-
-  momNe.rotateUz(momentE); // Rotation according to initial electron momentum
-
-  G4double KinEnNe = momentumCMS * vCMS * gammaCMS * (1 - std::cos(theta)); // Kinetic energy of neutron
+  G4double KinEnN = enerN - M; // Kinetic energy of neutron
   //G4cout << "Kineticna energija neutrona: " << KinEnNe/MeV << G4endl;
   // Particles definitions
 
   G4DynamicParticle* theNeutrino = new G4DynamicParticle;
     theNeutrino->SetDefinition(G4NeutrinoE::Definition());
-    theNeutrino->SetMomentum( momNu );
-    theNeutrino->SetKineticEnergy( kinEnNu );
+    theNeutrino->SetMomentum( momL );
+    theNeutrino->SetKineticEnergy( KinEnL );
 
   G4DynamicParticle*  theNeutron = new G4DynamicParticle;
     theNeutron->SetDefinition( G4Neutron::Definition() );
-    theNeutron->SetMomentum( momNe );
-    theNeutron->SetKineticEnergy( KinEnNe );
-  
+    theNeutron->SetMomentum( momN );
+    theNeutron->SetKineticEnergy( KinEnN );
+
   theResult->AddSecondary( theNeutrino );
   theResult->AddSecondary( theNeutron );
-    
+
+}
+
+///////////////////////*****************************************************///////////////////////////
+
+G4double InverseBetaModel::GetParA(G4double energyE)
+{
+  G4double a;
+  a = energyE * std::pow(M + energyE,2) * std::pow(M + 2*energyE,-2);
+  return a;
+}
+
+G4double InverseBetaModel::GetParB(G4double energyE)
+{
+  G4double b;
+  b = (1/3) * (energyE/M) * (3*std::pow(M,4) + 12*std::pow(M,3)*energyE + 18*std::pow(M,2)*std::pow(energyE,2)
+      + 12*M*std::pow(energyE,3) + 4*std::pow(energyE,3)) * std::pow(M + 2*energyE,-3);
+  return b;
 }

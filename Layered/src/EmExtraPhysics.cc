@@ -1,6 +1,7 @@
-#include "G4EmExtraPhysics.hh"
+#include "EmExtraPhysics.hh"
 
 #include "G4SystemOfUnits.hh"
+#include "G4SynchrotronRadiation.hh"
 
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
@@ -15,14 +16,10 @@
 #include "G4MuonNuclearProcess.hh"
 #include "G4MuonVDNuclearModel.hh"
 
-#include "G4GammaConversionToMuons.hh"
-#include "G4AnnihiToMuPair.hh"
-#include "G4eeToHadrons.hh"
-
 #include "G4PhysicsListHelper.hh"
 #include "G4BuilderType.hh"
 #include "G4AutoDelete.hh"
-
+ 
 // factory
 #include "G4PhysicsConstructorFactory.hh"
 //
@@ -32,17 +29,11 @@ G4bool G4EmExtraPhysics::gnActivated  = true;
 G4bool G4EmExtraPhysics::munActivated = true;
 G4bool G4EmExtraPhysics::synActivated = false;
 G4bool G4EmExtraPhysics::synActivatedForAll = false;
-G4bool G4EmExtraPhysics::gmumuActivated = false;
-G4bool G4EmExtraPhysics::pmumuActivated = false;
-G4bool G4EmExtraPhysics::phadActivated = false;
 
-G4ThreadLocal G4BertiniElectroNuclearBuilder* G4EmExtraPhysics::theGNPhysics = nullptr;
-G4ThreadLocal G4SynchrotronRadiation* G4EmExtraPhysics::theSynchRad = nullptr;
-G4ThreadLocal G4GammaConversionToMuons* G4EmExtraPhysics::theGammaToMuMu = nullptr;
-G4ThreadLocal G4AnnihiToMuPair* G4EmExtraPhysics::thePosiToMuMu = nullptr;
-G4ThreadLocal G4eeToHadrons* G4EmExtraPhysics::thePosiToHadrons = nullptr;
+G4ThreadLocal G4BertiniElectroNuclearBuilder* G4EmExtraPhysics::theGNPhysics=0;
+G4ThreadLocal G4SynchrotronRadiation* G4EmExtraPhysics::theSynchRad=0;
 
-G4EmExtraPhysics::G4EmExtraPhysics(G4int ver):
+G4EmExtraPhysics::G4EmExtraPhysics(G4int ver): 
   G4VPhysicsConstructor("G4GammaLeptoNuclearPhys"),
   verbose(ver)
 {
@@ -51,14 +42,19 @@ G4EmExtraPhysics::G4EmExtraPhysics(G4int ver):
   if(verbose > 1) G4cout << "### G4EmExtraPhysics" << G4endl;
 }
 
-G4EmExtraPhysics::G4EmExtraPhysics(const G4String&)
-  : G4EmExtraPhysics(1)
-{}
+G4EmExtraPhysics::G4EmExtraPhysics(const G4String&): 
+  G4VPhysicsConstructor("G4GammaLeptoNuclearPhys"),
+  verbose(1)
+{
+  theMessenger = new G4EmMessenger(this);
+  SetPhysicsType(bEmExtra);
+  if(verbose > 1) G4cout << "### G4EmExtraPhysics" << G4endl;
+}
 
 G4EmExtraPhysics::~G4EmExtraPhysics()
 {
   delete theMessenger;
-  theMessenger = nullptr;
+  theMessenger = 0;
 }
 
 void G4EmExtraPhysics::Synch(G4bool val)
@@ -82,21 +78,6 @@ void G4EmExtraPhysics::MuonNuclear(G4bool val)
   munActivated = val;
 }
 
-void G4EmExtraPhysics::GammaToMuMu(G4bool val)
-{
-  gmumuActivated = val;
-}
-
-void G4EmExtraPhysics::PositronToMuMu(G4bool val)
-{
-  pmumuActivated = val;
-}
-
-void G4EmExtraPhysics::PositronToHadrons(G4bool val)
-{
-  phadActivated = val;
-}
-
 void G4EmExtraPhysics::ConstructParticle()
 {
   G4Gamma::Gamma();
@@ -108,7 +89,6 @@ void G4EmExtraPhysics::ConstructParticle()
 
 void G4EmExtraPhysics::ConstructProcess()
 {
-  G4ParticleDefinition* gamma = G4Gamma::Gamma();
   G4ParticleDefinition* electron = G4Electron::Electron();
   G4ParticleDefinition* positron = G4Positron::Positron();
   G4ParticleDefinition* muonplus = G4MuonPlus::MuonPlus();
@@ -127,33 +107,20 @@ void G4EmExtraPhysics::ConstructProcess()
     ph->RegisterProcess( muNucProcess, muonplus);
     ph->RegisterProcess( muNucProcess, muonminus);
   }
-  if(gmumuActivated) {
-    theGammaToMuMu = new G4GammaConversionToMuons();
-    ph->RegisterProcess(theGammaToMuMu, gamma);
-  }
-  if(pmumuActivated) {
-    thePosiToMuMu = new G4AnnihiToMuPair();
-    ph->RegisterProcess(thePosiToMuMu, positron);
-  }
-  if(phadActivated) {
-    thePosiToHadrons = new G4eeToHadrons();
-    ph->RegisterProcess(thePosiToHadrons, positron);
-  }
   if(synActivated) {
     theSynchRad = new G4SynchrotronRadiation();
     ph->RegisterProcess( theSynchRad, electron);
     ph->RegisterProcess( theSynchRad, positron);
     //G4AutoDelete::Register(theSynchRad);
     if(synActivatedForAll) {
-      auto myParticleIterator=GetParticleIterator();
-      myParticleIterator->reset();
-      G4ParticleDefinition* particle = nullptr;
+      aParticleIterator->reset();
+      G4ParticleDefinition* particle=0;
 
-      while( (*myParticleIterator)() ) {
-	particle = myParticleIterator->value();
-	if( particle->GetPDGStable() && particle->GetPDGCharge() != 0.0) {
+      while( (*aParticleIterator)() ) {
+	particle = aParticleIterator->value();
+	if( particle->GetPDGStable() && particle->GetPDGCharge() != 0.0) { 
 	  if(verbose > 1) {
-	    G4cout << "### G4SynchrotronRadiation for "
+	    G4cout << "### G4SynchrotronRadiation for " 
 		   << particle->GetParticleName() << G4endl;
 	  }
 	  ph->RegisterProcess( theSynchRad, particle);
@@ -162,3 +129,4 @@ void G4EmExtraPhysics::ConstructProcess()
     }
   }
 }
+
