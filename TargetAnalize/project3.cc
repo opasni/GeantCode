@@ -44,10 +44,12 @@ int main(int argc,char** argv)
 #endif
   G4String targetwallmat, bremmstralung;
   G4cout << "Do you want target wall?" << G4endl;
-  G4cin >> targetwallmat;
+  // G4cin >> targetwallmat;
+  targetwallmat = "yes";
   G4cout << "Target cell Material set to: " << targetwallmat << G4endl;
   G4cout << "Bremmstralung on?" << G4endl;
-  G4cin >> bremmstralung;
+  // G4cin >> bremmstralung;
+  bremmstralung = "yes";
   G4cout << "Bremmstralung set to: " << bremmstralung << G4endl;
   // Set mandatory initialization classes
   DetectorConstruction* detConstruction = new DetectorConstruction(targetwallmat);
