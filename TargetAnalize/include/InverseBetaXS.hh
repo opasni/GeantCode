@@ -27,14 +27,9 @@ public:
   virtual G4bool IsElementApplicable(const G4DynamicParticle*, G4int Z,
                                      const G4Material*);
   virtual G4double GetElementCrossSection(const G4DynamicParticle*, G4int Z,
-                                    const G4Material* mat);
+                                    const G4Material*);
   // Body
 private:
-
-    G4double GetParAXS(G4double energyE);
-    G4double GetParBXS(G4double energyE);
-
-    const G4double M; // Mean mass of nucleai
 
     G4NistManager* nistmngr;
 
