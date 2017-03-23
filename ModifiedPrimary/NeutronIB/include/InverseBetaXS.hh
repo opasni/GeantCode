@@ -27,16 +27,18 @@ public:
   virtual G4bool IsElementApplicable(const G4DynamicParticle*, G4int Z,
                                      const G4Material*);
   virtual G4double GetElementCrossSection(const G4DynamicParticle*, G4int Z,
-                                    const G4Material*);
+                                    const G4Material* mat);
   // Body
 private:
 
+    const G4double M; // Mean mass of nucleai
+    
     G4NistManager* nistmngr;
-
-    // Cache values for XS
+        
+    //Cache values for XS
     G4double lastE ; // Last used energy value
     G4double lastSig; //Last used XS value
-
+    
     };
 
 #endif

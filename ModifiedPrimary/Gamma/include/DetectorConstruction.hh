@@ -1,0 +1,88 @@
+#ifndef DetectorConstruction_h
+#define DetectorConstruction_h 1
+
+#include "globals.hh"
+#include "G4VUserDetectorConstruction.hh"
+#include "G4RotationMatrix.hh"
+#include "G4FieldManager.hh"
+
+#include <vector>
+
+class G4VPhysicalVolume;
+class G4Material;
+class G4VSensitiveDetector;
+class G4VisAttributes;
+class G4GenericMessenger;
+
+/// Detector construction
+
+class DetectorConstruction : public G4VUserDetectorConstruction
+{
+public:
+    DetectorConstruction();
+    virtual ~DetectorConstruction();
+
+    virtual G4VPhysicalVolume* Construct();
+    virtual void ConstructSDandField();
+
+    void ConstructScintillator(G4double detectXY, G4double detectINXY, G4double detectZ,
+                        G4double detsinR, G4double detcosR, G4double scieldthick,
+                        std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical);
+
+    // void ConstructSchield1(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
+    //                     G4double schsinR,G4double schcosR, G4double rotTheta,
+    //                     G4Material* lead, G4LogicalVolume* worldLogical);
+
+    void ConstructSchield(G4double schieldXY, G4double schieldINXY, G4double schieldZ,
+                        G4double schsinR, G4double schcosR,
+                        G4Material* lead, G4LogicalVolume* worldLogical);
+
+    void ConstructMaterials();
+
+    G4int GetNumberOfLayers() const;
+    G4int GetNumberOfLayersZ() const;
+    G4double GetScintPosition() const;
+
+    const G4VPhysicalVolume* GetAbsorberPV() const;
+    const G4VPhysicalVolume* GetMagnetPV() const;
+
+private:
+
+    G4bool fcheckOverlaps;
+    G4GenericMessenger* fMessenger;
+
+
+    G4VPhysicalVolume* fHadCalScintiPV;
+    G4LogicalVolume* fscintScintLogical;
+
+    std::vector<G4VisAttributes*> fVisAttributes;
+
+    G4int fnofLayers;
+    G4int fnofLayersZ;
+    G4double fscintDetails;
+
+};
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+inline G4int DetectorConstruction::GetNumberOfLayers() const {
+    return fnofLayers;
+}
+
+inline G4int DetectorConstruction::GetNumberOfLayersZ() const {
+    return fnofLayersZ;
+}
+
+inline G4double DetectorConstruction::GetScintPosition() const {
+    return fscintDetails;
+}
+
+// inline const G4VPhysicalVolume* DetectorConstruction::GetMagnetPV() const {
+//   return fMagnetPV;
+// }
+
+inline const G4VPhysicalVolume* DetectorConstruction::GetAbsorberPV() const {
+  return fHadCalScintiPV;
+}
+
+#endif

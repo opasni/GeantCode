@@ -10,20 +10,12 @@
 //
 G4_DECLARE_XS_FACTORY(InverseBetaXS);
 
-static const G4double mD = 0.843;
-static const G4double mA = 1.060;
+static const G4double weakCons =  0.015; // M*G^2*cos(th_C)^2/Pi
 
-//static const G4double fermiG = 1.166
-
-static const G4double gAC = 1.2673;
-static const G4double muNe = -1.913;
-static const G4double muP = 2.793;
-
-static const G4double weakCons =  0.03;
+static const G4double fitCons = 6.413; // Constant from cross section integration
 
 
-InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()),
-M((G4NucleiProperties::GetNuclearMass(1,0)/GeV + G4NucleiProperties::GetNuclearMass(1,1)/GeV)/2), lastE(0), lastSig(0)
+InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()), lastE(0), lastSig(0)
 {
     nistmngr = G4NistManager::Instance();
 }
@@ -60,42 +52,19 @@ G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G
     {
       // Calculate maximal cross section at theta = pi
       lastE = energyE;
-      G4double Q2 = 4 * energyE*energyE/(1 + (2*energyE/M));
-      G4double tau = Q2/(4*M*M);
 
-      G4double GD = std::pow(1+(Q2/(mD*mD)),-2);
-      G4double gA = gAC * std::pow(1+(Q2/(mA*mA)),-2);
-      // gE = GD * (1 + (muNe * tau)/(1 + 5.6 * tau));
-      G4double gM = GD * (muP - muNe);
+      // Scaling to value where differential cross section maximal (theta_l = Pi)
+      G4double scalingF = 0;
+      scalingF = 0.6567 + 1.198*energyE - 15.52*energyE*energyE + 28.38*energyE*energyE*energyE;
 
-      G4double f1, f3;
-      f1 = gA*gA + tau * (gA*gA + gM*gM);
-      f3 = 2 * gA * gM;
-
-     	lastSig = weakCons * (GetParAXS(energyE)*(2*f1 + f3*(M + 2*energyE)/M) - GetParBXS(energyE)*f3);
+      // Calculate Cross section
+     	lastSig = weakCons * fitCons * energyE * scalingF;
 
       if(lastSig<0.) lastSig = 0.;
 
       return lastSig*picobarn;
     }
   }
-}
-
-///////////////////////*****************************************************///////////////////////////
-
-G4double InverseBetaXS::GetParAXS(G4double energyE)
-{
-  G4double a;
-  a = energyE * std::pow(M + energyE,2) * std::pow(M + 2*energyE,-2);
-  return a;
-}
-
-G4double InverseBetaXS::GetParBXS(G4double energyE)
-{
-  G4double b;
-  b = (1/3) * (energyE/M) * (3*std::pow(M,4) + 12*std::pow(M,3)*energyE + 18*std::pow(M,2)*std::pow(energyE,2)
-      + 12*M*std::pow(energyE,3) + 4*std::pow(energyE,3)) * std::pow(M + 2*energyE,-3);
-  return b;
 }
 
 ///////////////////////*****************************************************///////////////////////////

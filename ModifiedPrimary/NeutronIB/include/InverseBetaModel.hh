@@ -26,12 +26,12 @@ public:
 
   InverseBetaModel();
   ~InverseBetaModel();
-
+    
   G4HadFinalState* ApplyYourself(const G4HadProjectile& aTrack,
-                                   G4Nucleus&);
+                                   G4Nucleus& aTargetNucleus);
 
   virtual void ModelDescription(std::ostream& outFile) const;
-
+  
 
   private:
 
@@ -41,7 +41,7 @@ public:
     G4double CalculateProbability(G4double theta, G4double leptonKE);
 
     G4HadFinalState* theResult = new G4HadFinalState();
-
+     
     void CalculateVert(G4double theta, G4ThreeVector momentE, G4double leptonKE);
 
     const G4double M; // Mean mass of nucleai
