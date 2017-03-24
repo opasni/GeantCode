@@ -1,7 +1,6 @@
 #include "DetectorConstruction.hh"
 // #include "MagneticField.hh"
 #include "HadCalorimeterSD.hh"
-#include "Parameterisation.hh"
 
 #include "G4FieldManager.hh"
 #include "G4TransportationManager.hh"

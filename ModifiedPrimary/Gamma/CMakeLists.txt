@@ -55,9 +55,6 @@ set(PROJECT3_SCRIPTS
   joinPR.c
   vis.mac
   EnergyTheta
-  script.sh
-  InvBetaOff
-  InvBetaOn
   )
 
 foreach(_script ${PROJECT3_SCRIPTS})

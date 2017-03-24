@@ -72,7 +72,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
 
-    // G4cout << nofLayers[0] << ' ' << nofLayers[1] << ' ' << nofLayers[2] << G4endl;
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
         HadCalorimeterHit* hit = (*hcHC)[i];
@@ -82,36 +81,25 @@ void EventAction::EndOfEventAction(const G4Event* event)
           G4int layerNo = hit->GetRowID();
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
-          // G4String proc = hit->GetProcess();
-          // G4String name = hit->GetName();
-          if (dtime > 40) {
-            analysisManager->FillNtupleDColumn(1, eDep);
-            analysisManager->FillNtupleDColumn(2, dtime);
-            analysisManager->FillNtupleDColumn(3, pos[2]-fscintDetails);
-            analysisManager->FillNtupleIColumn(4, layerNo);
-            analysisManager->AddNtupleRow();
-          }
-          analysisManager->FillH1(2, eDep);
+          // if (dtime > 40) {
+          //   analysisManager->FillNtupleDColumn(0, eDep);
+          //   analysisManager->FillNtupleDColumn(1, dtime);
+          //   analysisManager->FillNtupleIColumn(2, layerNo);
+          //   analysisManager->AddNtupleRow();
+          // }
+          analysisManager->FillH1(1, eDep);
+          if (dtime > 40) analysisManager->FillH1(2, eDep);
           analysisManager->FillH1(3, dtime);
-          analysisManager->FillH1(4, layerNo);
-          analysisManager->FillH2(1, eDep, layerNo);
-          analysisManager->FillH2(2, eDep, dtime);
-          analysisManager->FillH2(3, dtime, layerNo);
-          if (eDep/MeV > 20) analysisManager->FillH2(4, dtime, layerNo);
-          // analysisManager->FillNtupleSColumn(4, proc);
-          // analysisManager->FillNtupleSColumn(5, name);
+          if (eDep > 40) analysisManager->FillH1(4, dtime);
+          analysisManager->FillH1(5, layerNo);
+          analysisManager->FillH2(1, eDep, dtime);
+
           totalHadHit++;
           totalHadE += eDep;
-            //}
         }
         fHadCalEdep[i] = totalHadE;
-        analysisManager->FillH1(1, totalHadE);
     }
-    // if (totalHadE != 0.){
-    //     G4cout << totalHadE/MeV << G4endl;
-    //     // analysisManager->FillNtupleDColumn(0, totalHadE/MeV);
-    //     // analysisManager->AddNtupleRow();
-    // }
+    
     //
     // Print diagnostics
     //

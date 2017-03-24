@@ -84,12 +84,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   int Nbeam = 20;
   for (i = 0; i < Nbeam; i++ ){
     G4double phi = CLHEP::twopi*G4UniformRand();
-    // G4double r = (2*G4UniformRand()-1)*10*um;
-    // G4double z = G4UniformRand()*10*um;
-    // G4double x = std::cos(phi)*r;
-    // G4double y = std::sin(phi)*r;
-    // fParticleGun1
-    //   ->SetParticlePosition(G4ThreeVector(x, y, -worldZHalfLength+z));
     fParticleGun1
       ->SetParticlePosition(G4ThreeVector(0.0, 0.0, -worldZHalfLength));
     while (1) {

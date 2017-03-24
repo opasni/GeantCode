@@ -132,7 +132,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double magZR = 0.25*m;
   G4double magR = -0.5*world_sizeZ+0.5*magZR+0.5*hz+window_thickness+10*cm;
 
-  G4double magposZ = (magR-target_posz)+target_posz;
+  G4double magposZ = magR;
 
   ConstructMagnet(magZR, magposZ, vacuum, worldLogical);
 
@@ -150,7 +150,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
   fscintDetails = detectR - detectZ;
 
-  G4double detpodZ = (detectR-target_posz)+target_posz;
+  G4double detpodZ = detectR;
 
   ConstructScintillator(detectXY, detectINXY, detectZ, detpodZ, 0.5*schieldthickness, detectMat, worldLogical);
 

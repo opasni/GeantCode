@@ -22,22 +22,18 @@ RunAction::RunAction(EventAction* eventAction)
   //
   //if ( fEventAction ) {
   analysisManager->CreateNtuple("Hits", "Hits");
-  analysisManager->CreateNtupleDColumn("Total Energy"); // column Id = 0
   analysisManager->CreateNtupleDColumn("Energy"); // column Id = 1
   analysisManager->CreateNtupleDColumn("Time"); // column Id = 2
-  analysisManager->CreateNtupleDColumn("VertexPositionZ"); // column Id = 3
   analysisManager->CreateNtupleIColumn("Layer"); // column Id = 4
   analysisManager->FinishNtuple();
 
-  analysisManager->CreateH1("TotalEnergy","Total Energy", 100, 0., 110*MeV);
   analysisManager->CreateH1("Energy","Energy", 100, 0., 110*MeV);
+  analysisManager->CreateH1("EnergyTC","Energy with time cut", 100, 0., 110*MeV);
   analysisManager->CreateH1("Time","Time", 100, 0., 200);
+  analysisManager->CreateH1("TimeEC","Time with energy cut", 100, 0., 200);
   analysisManager->CreateH1("Layer","Layer", 3, 0, 3);
 
-  analysisManager->CreateH2("EnergyLayer","Energy Layer", 100, 0., 110*MeV, 3, 0, 3);
   analysisManager->CreateH2("EnergyTime","Energy Time", 100, 0., 110*MeV, 100, 0, 200);
-  analysisManager->CreateH2("TimeLayer","Time Layer", 100, 0., 200, 3, 0, 3);
-  analysisManager->CreateH2("TimeLayerCut20","Time Layer (Energy cut at 20MeV)", 100, 0., 200, 3, 0, 3);
   //}
 }
 

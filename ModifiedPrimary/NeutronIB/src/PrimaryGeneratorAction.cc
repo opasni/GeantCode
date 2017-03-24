@@ -94,13 +94,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // Energy dist form two parts, first choose one
       G4double enprobpart = G4UniformRand();
       G4double energy;
+      G4double scale = energyprobbord;
       if (enprobpart <= energyprobbord) energy = 15*G4UniformRand()*MeV;
-      else energy = (21 - 15)*G4UniformRand()*MeV + 15*MeV;
+      else {energy = (21 - 15)*G4UniformRand()*MeV + 15*MeV; scale=1-scale;}
 
       G4int nth = GetIntTheta(theta);
       G4double userprob = GetInterpProb(energy, nth);
       G4double prob = G4UniformRand();
-      if (userprob > prob) {
+      if (userprob > (prob*scale)) {
         G4double px = std::sin(theta)*std::cos(phi);
         G4double py = std::sin(theta)*std::sin(phi);
         G4double pz = std::cos(theta);
