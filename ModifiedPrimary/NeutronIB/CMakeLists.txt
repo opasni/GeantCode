@@ -56,6 +56,7 @@ set(PROJECT3_SCRIPTS
   vis.mac
   EnergyTheta
   EnergyTheta10
+  EnergyThetaSe
   )
 
 foreach(_script ${PROJECT3_SCRIPTS})

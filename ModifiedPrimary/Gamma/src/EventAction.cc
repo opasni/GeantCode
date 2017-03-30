@@ -81,25 +81,33 @@ void EventAction::EndOfEventAction(const G4Event* event)
           G4int layerNo = hit->GetRowID();
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
+          G4double theta = atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ()));
+          // G4cout << pos.getX() << ' ' << pos.getY() << ' ' << pos.getZ() << G4endl;
+          // G4cout << atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ())) << G4endl;
           // if (dtime > 40) {
           //   analysisManager->FillNtupleDColumn(0, eDep);
           //   analysisManager->FillNtupleDColumn(1, dtime);
           //   analysisManager->FillNtupleIColumn(2, layerNo);
           //   analysisManager->AddNtupleRow();
           // }
-          analysisManager->FillH1(1, eDep);
-          if (dtime > 40) analysisManager->FillH1(2, eDep);
-          analysisManager->FillH1(3, dtime);
-          if (eDep > 40) analysisManager->FillH1(4, dtime);
+          if (dtime > 40) analysisManager->FillH1(1, eDep);
+          if (dtime > 45) analysisManager->FillH1(2, eDep);
+          if (dtime > 50) analysisManager->FillH1(3, eDep);
+
+          if ((eDep < 20)&&(eDep>16)) analysisManager->FillH1(4, dtime);
           analysisManager->FillH1(5, layerNo);
           analysisManager->FillH2(1, eDep, dtime);
+          analysisManager->FillH2(2, eDep, dtime);
+          analysisManager->FillH2(3, eDep, dtime);
+          analysisManager->FillH2(4, eDep, theta);
+          if (dtime > 40) analysisManager->FillH2(5, eDep, theta);
 
           totalHadHit++;
           totalHadE += eDep;
         }
         fHadCalEdep[i] = totalHadE;
     }
-    
+
     //
     // Print diagnostics
     //

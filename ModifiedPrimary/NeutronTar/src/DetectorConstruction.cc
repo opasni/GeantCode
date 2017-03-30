@@ -94,6 +94,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double world_sizeX = 300*cm;
   G4double world_sizeY = 300*cm;
   G4double world_sizeZ  = 350*cm;
+  fscintDetails = world_sizeZ/2;
 
   G4Box* solidWorld =
           new G4Box("World", 0.5*world_sizeX, 0.5*world_sizeY, 0.5*world_sizeZ);
@@ -118,7 +119,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4double detectTarDist = 2.5*m;
   G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
-  fscintDetails = detectR - detectZ;
+  // fscintDetails = detectR - detectZ;
   G4double detsinR = 0;
    // (detectR-target_posz)*sin(rotTheta);
   G4double detcosR = (detectR-target_posz)+target_posz;
