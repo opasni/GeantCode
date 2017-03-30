@@ -12,7 +12,10 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
-G4double energylowval = 0.000003445;
+G4double energyhighval = 0.000003445;
+// G4double energylowval = 1.0 // From 0
+G4double energylowval = 0.38554; // From 10
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -33,7 +36,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun1->SetParticlePolarization(G4ThreeVector(0.,0.,1.));
   //fParticleGun1->SetParticleTime(0.1*ns);
 
-  std::ifstream infile2("EnergyTheta", std::ios::in);
+  // std::ifstream infile2("EnergyTheta", std::ios::in);
+  std::ifstream infile2("EnergyTheta10", std::ios::in);
   infile2 >> fnumX >> fnumY >> fdnX >> fdnY;
   G4double ehi, thi, val;
   for (int i=0; i<fnumX; i++) {
@@ -82,7 +86,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 
   int i;
-  int Nbeam = 20;
+  int Nbeam = 1;
   for (i = 0; i < Nbeam; i++ ){
     G4double phi = CLHEP::twopi*G4UniformRand();
 
@@ -90,11 +94,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       ->SetParticlePosition(G4ThreeVector(0.0, 0.0, -worldZHalfLength));
     while (1) {
       G4double theta = (0.515-0.165)*G4UniformRand()+0.165;
-      G4double energy = EnergyProbDist((1-energylowval)*G4UniformRand()+energylowval)*MeV;
+      G4double energy = EnergyProbDist(G4UniformRand())*MeV;
 
       G4int nth = GetIntTheta(theta);
       G4double userprob = GetInterpProb(energy, nth);
-      G4double prob = G4UniformRand()*pow(1.15, -energy);
+      // G4double prob = G4UniformRand()*pow(1.15, -energy); // From 0
+      G4double prob = G4UniformRand()*2.5937*pow(1.15, -energy); // From 10
       if (userprob > prob) {
         G4double px = std::sin(theta)*std::cos(phi);
         G4double py = std::sin(theta)*std::sin(phi);
@@ -128,8 +133,9 @@ G4int PrimaryGeneratorAction::GetIntTheta(G4double val)
 
 G4double PrimaryGeneratorAction::EnergyProbDist(G4double ran) {
   G4double val;
-  G4double base = log(1.15);
-  val = -(log(ran)/base);
+  // G4double base = log(1.15); // From 0
+  G4double base = log(1.1); // From 10
+  val = -(log((energylowval-energyhighval)*ran+energyhighval)/base);
   return val;
 }
 
