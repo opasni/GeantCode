@@ -32,7 +32,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun1->SetParticlePolarization(G4ThreeVector(0.,0.,1.));
   //fParticleGun1->SetParticleTime(0.1*ns);
 
-  std::ifstream infile2("EnergyTheta", std::ios::in);
+  // std::ifstream infile2("EnergyTheta", std::ios::in);
+  std::ifstream infile2("EnergyTheta10", std::ios::in);
   infile2 >> fnumX >> fnumY >> fdnX >> fdnY;
   G4double ehi, thi, val;
   for (int i=0; i<fnumX; i++) {
@@ -81,7 +82,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 
   int i;
-  int Nbeam = 20;
+  int Nbeam = 1;
   for (i = 0; i < Nbeam; i++ ){
     G4double phi = CLHEP::twopi*G4UniformRand();
     fParticleGun1
@@ -91,7 +92,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double energy = EnergyProbDist(G4UniformRand())*MeV;
       G4int nth = GetIntTheta(theta);
       G4double userprob = GetInterpProb(energy, nth);
-      G4double prob = G4UniformRand()*(0.5*std::pow(energy,-1.22));
+      // G4double prob = G4UniformRand()*(0.12282*pow(energy+0.05,-1.7)); // From 0
+      G4double prob = G4UniformRand()*(50.5455*pow(energy+0.05,-1.7)); // From 10
       if (userprob > prob) {
         G4double px = std::sin(theta)*std::cos(phi);
         G4double py = std::sin(theta)*std::sin(phi);
@@ -125,8 +127,9 @@ G4int PrimaryGeneratorAction::GetIntTheta(G4double val)
 
 G4double PrimaryGeneratorAction::EnergyProbDist(G4double ran) {
   G4double val;
-  // val = pow((pow(110,-0.7)-pow(0.1,-0.7)*ran+pow(0.1,-0.7)),-(1/0.7));
-  val = std::pow((2.75423 - 2.398686 * ran),-4.54545);
+  // val = pow((pow(0.05,-0.7)-pow(0.1,-0.7)*ran+pow(0.1,-0.7)),-(1/0.7));
+  // val = std::pow((8.1418-0.03724)*ran+0.03724,-1.42857); //From 0
+  val = std::pow((0.19883-0.03724)*ran+0.03724,-1.42857); //From 10
   return val;
 }
 

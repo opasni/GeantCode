@@ -33,7 +33,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun1->SetParticlePolarization(G4ThreeVector(0.,0.,1.));
   //fParticleGun1->SetParticleTime(0.1*ns);
 
-  std::ifstream infile2("EnergyTheta", std::ios::in);
+  // std::ifstream infile2("EnergyTheta", std::ios::in);
+  std::ifstream infile2("EnergyTheta10", std::ios::in);
   infile2 >> fnumX >> fnumY >> fdnX >> fdnY;
   G4double ehi, thi, val;
   for (int i=0; i<fnumX; i++) {
@@ -82,7 +83,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 
   int i;
-  int Nbeam = 20;
+  int Nbeam = 1;
   for (i = 0; i < Nbeam; i++ ){
     G4double phi = CLHEP::twopi*G4UniformRand();
 
@@ -94,9 +95,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       // Energy dist form two parts, first choose one
       G4double enprobpart = G4UniformRand();
       G4double energy;
-      G4double scale = energyprobbord;
+      G4double scale = energyprobbord/(3*(1-energyprobbord));
       if (enprobpart <= energyprobbord) energy = 15*G4UniformRand()*MeV;
-      else {energy = (21 - 15)*G4UniformRand()*MeV + 15*MeV; scale=1-scale;}
+      else {energy = (21 - 15)*G4UniformRand()*MeV + 15*MeV; scale=1;}
 
       G4int nth = GetIntTheta(theta);
       G4double userprob = GetInterpProb(energy, nth);
