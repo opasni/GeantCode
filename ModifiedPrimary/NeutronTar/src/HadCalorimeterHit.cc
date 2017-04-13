@@ -20,13 +20,13 @@ G4ThreadLocal G4Allocator<HadCalorimeterHit>* HadCalorimeterHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HadCalorimeterHit::HadCalorimeterHit()\
-: G4VHit(), fColumnID(-1), fRowID(-1), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
+: G4VHit(), fColumnID(-1), fRowID(-1), fLayerID(-1), fParentID(0), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HadCalorimeterHit::HadCalorimeterHit(G4int iCol,G4int iRow)
-: G4VHit(), fColumnID(iCol), fRowID(iRow), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
+HadCalorimeterHit::HadCalorimeterHit(G4int iCol,G4int iRow, G4int iLayer)
+: G4VHit(), fColumnID(iCol), fRowID(iRow), fLayerID(iLayer), fParentID(0), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,6 +40,8 @@ HadCalorimeterHit::HadCalorimeterHit(const HadCalorimeterHit &right)
 : G4VHit() {
     fColumnID = right.fColumnID;
     fRowID = right.fRowID;
+    fLayerID = right.fLayerID;
+    fParentID = right.fParentID;
     fEdep = right.fEdep;
     fPos = right.fPos;
     fTime = right.fTime;
@@ -55,6 +57,8 @@ const HadCalorimeterHit& HadCalorimeterHit::operator=(const
 {
     fColumnID = right.fColumnID;
     fRowID = right.fRowID;
+    fLayerID = right.fLayerID;
+    fParentID = right.fParentID;
     fEdep = right.fEdep;
     fPos = right.fPos;
     fTime = right.fTime;
@@ -110,6 +114,12 @@ const std::map<G4String,G4AttDef>* HadCalorimeterHit::GetAttDefs() const
         (*store)["Row"]
           = G4AttDef("Row","Row ID","Physics","","G4int");
 
+        (*store)["Layer"]
+          = G4AttDef("Layer","Layer ID","Physics","","G4int");
+
+        (*store)["Parent"]
+          = G4AttDef("Parent","Parent ID","Physics","","G4int");
+
         (*store)["Energy"]
           = G4AttDef("Energy","Energy Deposited","Physics","G4BestUnit",
                      "G4double");
@@ -142,10 +152,13 @@ std::vector<G4AttValue>* HadCalorimeterHit::CreateAttValues() const
     values
       ->push_back(G4AttValue("HitType","HadCalorimeterHit",""));
     values
-      ->push_back(G4AttValue("Column",G4UIcommand::ConvertToString(fColumnID),
-                             ""));
+      ->push_back(G4AttValue("Column",G4UIcommand::ConvertToString(fColumnID),""));
     values
       ->push_back(G4AttValue("Row",G4UIcommand::ConvertToString(fRowID),""));
+    values
+      ->push_back(G4AttValue("Layer",G4UIcommand::ConvertToString(fLayerID),""));
+    values
+      ->push_back(G4AttValue("Parent",G4UIcommand::ConvertToString(fParentID),""));
     values
       ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
     values
@@ -164,7 +177,7 @@ std::vector<G4AttValue>* HadCalorimeterHit::CreateAttValues() const
 
 void HadCalorimeterHit::Print()
 {
-    G4cout << "  Cell[" << fRowID << ", " << fColumnID << "] "
+    G4cout << "  Cell[" << fRowID << ", " << fColumnID <<  ", " << fLayerID << "] "
     << fEdep/MeV << " (MeV) " << fPos << G4endl;
 }
 

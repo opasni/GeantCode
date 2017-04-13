@@ -25,7 +25,7 @@ class HadCalorimeterHit : public G4VHit
 {
 public:
     HadCalorimeterHit();
-    HadCalorimeterHit(G4int iCol,G4int iRow);
+    HadCalorimeterHit(G4int iCol,G4int iRow,G4int iLayer);
     HadCalorimeterHit(const HadCalorimeterHit &right);
     virtual ~HadCalorimeterHit();
 
@@ -45,6 +45,12 @@ public:
 
     void SetRowID(G4int z) { fRowID = z; }
     G4int GetRowID() const { return fRowID; }
+
+    void SetLayerID(G4int z) { fLayerID = z; }
+    G4int GetLayerID() const { return fLayerID; }
+
+    void SetParentID(G4int z) { fParentID = z; }
+    G4int GetParentID() const { return fParentID; }
 
     void SetEdep(G4double de) { fEdep = de; }
     void AddEdep(G4double de) { fEdep += de; }
@@ -68,6 +74,8 @@ public:
 private:
     G4int fColumnID;
     G4int fRowID;
+    G4int fLayerID;
+    G4int fParentID;
     G4double fEdep;
     G4ThreeVector fPos;
     G4double fTime;

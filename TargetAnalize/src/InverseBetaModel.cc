@@ -21,7 +21,7 @@ static const G4double gAC = 1.2673;
 static const G4double muNe = -1.913;
 static const G4double muP = 2.793;
 
-static const G4double fitCons = 6.413; // Constant from cross section integration
+static const G4double fitCons = 6.5; // Constant from cross section integration
 
 InverseBetaModel::InverseBetaModel()
   : G4HadronicInteraction("InverseBetaModel"),
@@ -55,7 +55,7 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus&)
 
   G4double theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
 
-  G4double sigma = CalculateProbability(theta, energyE);  // Calculate sigma(theta)/sigma(pi)
+  G4double sigma = CalculateProbability(cos(theta), energyE);  // Calculate sigma(theta)/sigma(pi)
   G4double prob = G4UniformRand();
 
   // Applying actual distribution
@@ -88,7 +88,7 @@ G4double InverseBetaModel::CalculateProbability(G4double theta, G4double energyE
 
   // Calculate Probability
 
-  G4double enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));
+  G4double enerL = energyE/(1 + (energyE*(1-theta)/M));
   G4double enerN = energyE + M - enerL;
 
   G4double Q2 = 2 * M * (energyE - enerL);
@@ -105,7 +105,7 @@ G4double InverseBetaModel::CalculateProbability(G4double theta, G4double energyE
   f3 = 2 * gA * gM;
 
   G4double enerpart = (enerL*enerL*enerN)/(energyE*energyE*M)*(1/fitCons);
-  G4double anglepart = f2 + (2*f1 - f2 + ((energyE + enerL)/M)*f3)*std::pow(std::sin(theta/2),2);
+  G4double anglepart = f2 + (2*f1 - f2 + ((energyE + enerL)/M)*f3)*(1-theta)/2;
 
   return (enerpart*anglepart);
 

@@ -61,10 +61,11 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4double timeglob = step->GetTrack()->GetGlobalTime();
     G4ThreeVector vertpos = step->GetTrack()->GetPosition();
     // G4ThreeVector vertpos = step->GetTrack()->GetVertexPosition();
+
     // G4String process = step->GetTrack()-> GetCreatorProcess()->GetProcessName();
     // G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
 
-    // G4cout << vertpos  << " " << process << " " << name <<G4endl;
+    G4int parentNo = step->GetTrack()->GetParentID();
 
     //if ( timeglob < 60*ns) return true;
 
@@ -78,8 +79,9 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4VPhysicalVolume* columnPhysical = touchable->GetVolume(3);
     G4int columnNo = columnPhysical->GetCopyNo();
 
-     if (((rowNo==8) ||(rowNo==9) ||(rowNo==10) ||(rowNo==11))
-             && ((columnNo==8) ||(columnNo==9) ||(columnNo==10) ||(columnNo==11))) return true;
+        //  if (((rowNo==8) ||(rowNo==9) ||(rowNo==10) ||(rowNo==11))
+        //          && ((columnNo==8) ||(columnNo==9) ||(columnNo==10) ||(columnNo==11))) G4cout << vertpos << G4endl;
+
 
     // G4int hitID = nofLayers*columnNo+rowNo;
     G4int hitID = nofLayersZ*(nofLayers*columnNo + rowNo) + layerNo;
@@ -89,7 +91,9 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     if (hit->GetColumnID()<0)
     {
         hit->SetColumnID(columnNo);
-        hit->SetRowID(layerNo);
+        hit->SetRowID(rowNo);
+        hit->SetLayerID(layerNo);
+        hit->SetParentID(parentNo);
         hit->SetTime(timeglob);
         hit->SetPos(vertpos);
         // hit->SetProcess(process);

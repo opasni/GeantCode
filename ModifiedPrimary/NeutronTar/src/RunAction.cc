@@ -27,11 +27,13 @@ RunAction::RunAction(EventAction* eventAction)
   analysisManager->CreateNtupleIColumn("Layer"); // column Id = 4
   analysisManager->FinishNtuple();
 
-    analysisManager->CreateH1("Energy40","Energy", 100, 0., 110*MeV);
-    analysisManager->CreateH1("Energy45","Energy", 100, 0., 110*MeV);
-    analysisManager->CreateH1("Energy50","Energy", 100, 0., 110*MeV);
+    analysisManager->CreateH1("Energy60","Energy", 100, 0., 110*MeV);
+    analysisManager->CreateH1("Energy75","Energy", 100, 0., 110*MeV);
+    analysisManager->CreateH1("Energy100","Energy", 100, 0., 110*MeV);
     analysisManager->CreateH1("Time","Time", 100, 0., 200);
-    analysisManager->CreateH1("Layer","Layer", 3, 0, 3);
+    analysisManager->CreateH1("Hit","Number of Hits", 20, 0, 20);
+    analysisManager->CreateH1("ParentID","Numb of Layers with signal per event", 5, 0, 5);
+    analysisManager->CreateH1("AverageDist","Numb of rows with signal per event", 100, 0, 1000);
 
     analysisManager->CreateH2("EnergyTime","Energy Time", 50, 10.*MeV, 25*MeV, 100, 0, 200);
     analysisManager->CreateH2("EnergyTime2","Energy Time", 100, 10.*MeV, 110*MeV, 100, 0, 200);
