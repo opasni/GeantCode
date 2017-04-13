@@ -59,6 +59,9 @@ public:
     void SetPos(G4ThreeVector xyz) { fPos = xyz; }
     G4ThreeVector GetPos() const { return fPos; }
 
+    void SetPosMean(G4ThreeVector xyz) { fPosMean = xyz; }
+    G4ThreeVector GetPosMean() const { return fPosMean; }
+
     void SetTime(G4double t) { fTime = t; }
     G4double GetTime() const { return fTime; }
 
@@ -78,6 +81,7 @@ private:
     G4int fParentID;
     G4double fEdep;
     G4ThreeVector fPos;
+    G4ThreeVector fPosMean;
     G4double fTime;
     G4RotationMatrix fRot;
     G4String fProcess;

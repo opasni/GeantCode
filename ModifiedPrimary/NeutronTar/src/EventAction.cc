@@ -72,6 +72,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
 
+    G4int p0 = 0;
 
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
@@ -83,9 +84,12 @@ void EventAction::EndOfEventAction(const G4Event* event)
           G4int rowNo = hit->GetRowID();
           // G4int columnNo = hit->GetColumnID();
           G4int parentNo = hit->GetParentID();
+          if (parentNo==0) p0++;
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
-          fPos.push_back(pos);
+          G4ThreeVector posMean = hit->GetPosMean();
+          G4double dist = sqrt(pow(pos[0]-posMean[0],2)+pow(pos[1]-posMean[1],2))-posMean[2];
+          fPos.push_back(dist);
           G4double theta = atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ()));
 
           // if (dtime > 40) {
@@ -99,8 +103,9 @@ void EventAction::EndOfEventAction(const G4Event* event)
             if (dtime < 85) analysisManager->FillH1(2, eDep);
             if (dtime < 125) analysisManager->FillH1(3, eDep);
           }
+          analysisManager->FillH1(7, dist);
 
-          if ((eDep < 20)&&(eDep>16)) analysisManager->FillH1(4, dtime);
+          if ((eDep < 20)&&(eDep>17)) analysisManager->FillH1(4, dtime);
           analysisManager->FillH1(6, parentNo);
           analysisManager->FillH2(1, eDep, dtime);
           analysisManager->FillH2(2, eDep, dtime);
@@ -110,13 +115,19 @@ void EventAction::EndOfEventAction(const G4Event* event)
           totalHadHit++;
           totalHadE += eDep;
         }
+        // if (p0>0) G4cout << p0<< G4endl;
         fHadCalEdep[i] = totalHadE;
         if (totalHadHit!=0) {
           analysisManager->FillH1(5, totalHadHit);
-          G4double xMean = CalculateMean(0);
-          G4double yMean = CalculateMean(1);
-          G4double dev = CalculateDevXY(xMean, yMean);
-          analysisManager->FillH1(7, dev);
+          // G4double xMean = CalculateMean(0);
+          // G4double yMean = CalculateMean(1);
+          // G4double xMean = posMean[0];
+          // G4double yMean = posMean[1];
+          // G4int n = fPos.size();
+          // G4cout << "Mean: " << xMean << ' ' << yMean << G4endl;
+          // for (int i=0; i<n; i++) G4cout << fPos[i][0] << ' ' << fPos[i][1] << G4endl;
+          // G4double dev = CalculateDevXY(xMean, yMean);
+          // analysisManager->FillH1(7, dev);
         }
     }
 

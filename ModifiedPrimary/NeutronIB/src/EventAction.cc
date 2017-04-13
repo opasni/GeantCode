@@ -72,27 +72,40 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
 
+    G4int p0 = 0;
+
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
         HadCalorimeterHit* hit = (*hcHC)[i];
         G4double eDep = hit->GetEdep();
         if (eDep>0.)
         {
-          G4int layerNo = hit->GetRowID();
+          G4int layerNo = hit->GetLayerID();
+          G4int rowNo = hit->GetRowID();
+          // G4int columnNo = hit->GetColumnID();
+          G4int parentNo = hit->GetParentID();
+          if (parentNo==0) p0++;
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
+          G4ThreeVector posMean = hit->GetPosMean();
+          G4double dist = sqrt(pow(pos[0]-posMean[0],2)+pow(pos[1]-posMean[1],2))-posMean[2];
+          fPos.push_back(dist);
           G4double theta = atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ()));
+
           // if (dtime > 40) {
           //   analysisManager->FillNtupleDColumn(0, eDep);
           //   analysisManager->FillNtupleDColumn(1, dtime);
           //   analysisManager->FillNtupleIColumn(2, layerNo);
           //   analysisManager->AddNtupleRow();
           // }
-          if (dtime > 40) analysisManager->FillH1(1, eDep);
-          if (dtime > 45) analysisManager->FillH1(2, eDep);
-          if (dtime > 50) analysisManager->FillH1(3, eDep);
+          if (dtime > 40) {
+            if (dtime < 60) analysisManager->FillH1(1, eDep);
+            if (dtime < 85) analysisManager->FillH1(2, eDep);
+            if (dtime < 125) analysisManager->FillH1(3, eDep);
+          }
+          analysisManager->FillH1(7, dist);
 
-          if ((eDep < 20)&&(eDep>16)) analysisManager->FillH1(4, dtime);
+          if ((eDep < 20)&&(eDep>17)) analysisManager->FillH1(4, dtime);
           analysisManager->FillH1(5, layerNo);
           analysisManager->FillH2(1, eDep, dtime);
           analysisManager->FillH2(2, eDep, dtime);
@@ -101,7 +114,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
           totalHadHit++;
           totalHadE += eDep;
         }
+        // if (p0>0) G4cout << p0<< G4endl;
         fHadCalEdep[i] = totalHadE;
+        if (totalHadHit!=0) {
+          analysisManager->FillH1(5, totalHadHit);
+        }
     }
 
     //

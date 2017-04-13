@@ -24,11 +24,13 @@ public:
     std::vector<G4double>& GetHadCalEdep() { return fHadCalEdep; }
 
 private:
-    G4int fHCHCID;
-    std::vector<G4double> fHadCalEdep;
-    G4double fscintDetails;
-    G4int nofLayers;
-    G4int nofLayersZ;
+  G4int fHCHCID;
+  std::vector<G4double> fHadCalEdep;
+  // std::vector<G4ThreeVector> fPos;
+  std::vector<G4double> fPos;
+  G4double fscintDetails;
+  G4int nofLayers;
+  G4int nofLayersZ;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

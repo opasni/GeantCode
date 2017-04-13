@@ -25,6 +25,9 @@ private:
     G4int fHCID;
     G4int nofLayers;
     G4int nofLayersZ;
+    G4int fFirst=0;
+    G4double xMean;
+    G4double yMean;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

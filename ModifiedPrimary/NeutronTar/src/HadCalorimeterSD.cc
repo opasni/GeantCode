@@ -37,6 +37,8 @@ void HadCalorimeterSD::Initialize(G4HCofThisEvent* hce)
     { fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection); }
     hce->AddHitsCollection(fHCID,fHitsCollection);
 
+    fFirst = 0;
+
     // fill calorimeter hits with zero energy deposition
     for (G4int iColumn=0;iColumn<nofLayers;iColumn++)
     {
@@ -79,10 +81,35 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4VPhysicalVolume* columnPhysical = touchable->GetVolume(3);
     G4int columnNo = columnPhysical->GetCopyNo();
 
-        //  if (((rowNo==8) ||(rowNo==9) ||(rowNo==10) ||(rowNo==11))
-        //          && ((columnNo==8) ||(columnNo==9) ||(columnNo==10) ||(columnNo==11))) G4cout << vertpos << G4endl;
 
+    // We calculate the distance the particle traveled through the air, so that we can substitute from total lenght
 
+    G4double removedist;
+    if (fFirst==0){
+      fFirst=1;
+      xMean = vertpos[0];
+      yMean = vertpos[1];
+      removedist = 0;
+    }
+    else if (((xMean<-499)&&(vertpos[0]<-499))||((xMean>499)&&(vertpos[0]>499))) removedist = 0;
+    else if (((yMean<-499)&&(vertpos[1]<-499))||((yMean>499)&&(vertpos[1]>499))) removedist = 0;
+    else {
+      G4double k = (vertpos[1]-yMean)/(vertpos[0]-xMean);
+      G4double n = (yMean*vertpos[0]-xMean*vertpos[1])/(vertpos[0]-xMean);
+      G4double p1x=-1000;
+      G4double p1y, p2x,p2y;
+      G4double x,y;
+      y=k*(-500)+n;if ((y>-500)&&(y<500)) {p1x=-500;p1y=y;}
+      y=k*(500)+n;if ((y>-500)&&(y<500)) {if (p1x==-1000) {p1x=500;p1y=y;} else {p2x=500;p2y=y;}}
+      x=(-500-n)/k;if ((x>-500)&&(x<500)) {if (p1x==-1000) {p1x=x;p1y=-500;} else {p2x=x;p2y=-500;}}
+      x=(500-n)/k;if ((x>-500)&&(x<500)) {if (p1x==-1000) {p1x=-x;p1y=500;} else {p2x=x;p2y=500;}}
+      if (p1x==-1000) removedist = 0;
+      else removedist = sqrt(pow(p1x-p2x,2)+pow(p1y-p2y,2));
+      // G4double dist = sqrt(pow(xMean-vertpos[0],2)+pow(yMean-vertpos[1],2));
+      // if (dist<removedist) G4cout << xMean << ' ' << yMean << ' ' << vertpos[0] << ' ' << vertpos[1] << ' ' << k <<  ' ' << n << ' ' << dist <<  ' ' << removedist << G4endl;
+    }
+    // G4cout << removedist << G4endl;
+    G4ThreeVector posMean = G4ThreeVector(xMean, yMean, removedist);
     // G4int hitID = nofLayers*columnNo+rowNo;
     G4int hitID = nofLayersZ*(nofLayers*columnNo + rowNo) + layerNo;
     HadCalorimeterHit* hit = (*fHitsCollection)[hitID];
@@ -96,6 +123,7 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         hit->SetParentID(parentNo);
         hit->SetTime(timeglob);
         hit->SetPos(vertpos);
+        hit->SetPosMean(posMean);
         // hit->SetProcess(process);
         // hit->SetName(name);
         G4int depth = touchable->GetHistory()->GetDepth();

@@ -20,13 +20,13 @@ G4ThreadLocal G4Allocator<HadCalorimeterHit>* HadCalorimeterHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HadCalorimeterHit::HadCalorimeterHit()\
-: G4VHit(), fColumnID(-1), fRowID(-1), fLayerID(-1), fParentID(0), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
+: G4VHit(), fColumnID(-1), fRowID(-1), fLayerID(-1), fParentID(0), fEdep(0.), fPos(0), fPosMean(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HadCalorimeterHit::HadCalorimeterHit(G4int iCol,G4int iRow, G4int iLayer)
-: G4VHit(), fColumnID(iCol), fRowID(iRow), fLayerID(iLayer), fParentID(0), fEdep(0.), fPos(0), fTime(0), fProcess(), fName()
+: G4VHit(), fColumnID(iCol), fRowID(iRow), fLayerID(iLayer), fParentID(0), fEdep(0.), fPos(0), fPosMean(0), fTime(0), fProcess(), fName()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -44,6 +44,7 @@ HadCalorimeterHit::HadCalorimeterHit(const HadCalorimeterHit &right)
     fParentID = right.fParentID;
     fEdep = right.fEdep;
     fPos = right.fPos;
+    fPosMean = right.fPosMean;
     fTime = right.fTime;
     fProcess = right.fProcess;
     fName = right.fName;
@@ -61,6 +62,7 @@ const HadCalorimeterHit& HadCalorimeterHit::operator=(const
     fParentID = right.fParentID;
     fEdep = right.fEdep;
     fPos = right.fPos;
+    fPosMean = right.fPosMean;
     fTime = right.fTime;
     fProcess = right.fProcess;
     fName = right.fName;
@@ -128,6 +130,10 @@ const std::map<G4String,G4AttDef>* HadCalorimeterHit::GetAttDefs() const
           = G4AttDef("Pos", "Position", "Physics","G4BestUnit",
                      "G4ThreeVector");
 
+        (*store)["PosMean"]
+          = G4AttDef("fPosMean", "PositionMean", "Physics","G4BestUnit",
+                     "G4ThreeVector");
+
         (*store)["Time"]
           = G4AttDef("Time","Time of Hit","Physics","G4BestUnit",
                      "G4double");
@@ -163,6 +169,8 @@ std::vector<G4AttValue>* HadCalorimeterHit::CreateAttValues() const
       ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
     values
       ->push_back(G4AttValue("Pos",G4BestUnit(fPos,"Length"),""));
+    values
+      ->push_back(G4AttValue("PosMean",G4BestUnit(fPosMean,"Length"),""));
     values
       ->push_back(G4AttValue("Time",G4BestUnit(fTime,"Time"),""));
     values
