@@ -140,7 +140,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4double schsinR = 0;
    // (schieldR-target_posz)*sin(rotTheta);
-  G4double schcosR = (schieldR-target_posz)+target_posz;
+  G4double schcosR = schieldR;
    // (schieldR-target_posz)*cos(rotTheta)+target_posz;
 
   ConstructSchield(schieldXY, schieldINXY, schieldZ, schsinR, schcosR,

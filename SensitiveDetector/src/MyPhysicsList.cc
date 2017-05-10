@@ -38,7 +38,7 @@ MyPhysicsList::MyPhysicsList(G4String invbeta)
 
   // Particles
   fParticleList = new G4DecayPhysics("decays");
-  fEmPhysicsList = new EmLivermorePhysics();
+  fEmPhysicsList = new G4EmLivermorePhysics();
   //fEmPhysicsList = new G4EmStandardPhysics();
   fEmExPhysicsList = new G4EmExtraPhysics();
   fIonPhysicsList = new G4IonPhysics();

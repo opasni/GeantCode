@@ -88,29 +88,27 @@ void EventAction::EndOfEventAction(const G4Event* event)
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
           G4ThreeVector posMean = hit->GetPosMean();
-          G4double dist = sqrt(pow(pos[0]-posMean[0],2)+pow(pos[1]-posMean[1],2))-posMean[2];
-          fPos.push_back(dist);
+          G4double dwidth = sqrt(pow(pos[0]-posMean[0],2)+pow(pos[1]-posMean[1],2))-posMean[2];
+          fPos.push_back(dwidth);
           G4double theta = atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ()));
 
-          // if (dtime > 40) {
-          //   analysisManager->FillNtupleDColumn(0, eDep);
-          //   analysisManager->FillNtupleDColumn(1, dtime);
-          //   analysisManager->FillNtupleIColumn(2, layerNo);
-          //   analysisManager->AddNtupleRow();
-          // }
+          G4double ddepth = pos.getZ()-750;
+
           if (dtime > 40) {
             if (dtime < 60) analysisManager->FillH1(1, eDep);
             if (dtime < 85) analysisManager->FillH1(2, eDep);
             if (dtime < 125) analysisManager->FillH1(3, eDep);
           }
-          analysisManager->FillH1(7, dist);
+          analysisManager->FillH1(7, dwidth);
+          analysisManager->FillH1(8, ddepth);
 
-          if ((eDep < 20)&&(eDep>17)) analysisManager->FillH1(4, dtime);
+          if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH1(4, dtime);
           analysisManager->FillH1(6, parentNo);
           analysisManager->FillH2(1, eDep, dtime);
-          analysisManager->FillH2(2, eDep, dtime);
-          analysisManager->FillH2(3, eDep, dtime);
-          analysisManager->FillH2(4, eDep, theta);
+          analysisManager->FillH2(2, eDep, theta);
+          if ((dtime > 40)&&(dtime > 60)) analysisManager->FillH2(3, eDep, theta);
+          if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH2(4, dtime, theta);
+          analysisManager->FillH2(5, dwidth, ddepth);
 
           totalHadHit++;
           totalHadE += eDep;
@@ -119,15 +117,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
         fHadCalEdep[i] = totalHadE;
         if (totalHadHit!=0) {
           analysisManager->FillH1(5, totalHadHit);
-          // G4double xMean = CalculateMean(0);
-          // G4double yMean = CalculateMean(1);
-          // G4double xMean = posMean[0];
-          // G4double yMean = posMean[1];
-          // G4int n = fPos.size();
-          // G4cout << "Mean: " << xMean << ' ' << yMean << G4endl;
-          // for (int i=0; i<n; i++) G4cout << fPos[i][0] << ' ' << fPos[i][1] << G4endl;
-          // G4double dev = CalculateDevXY(xMean, yMean);
-          // analysisManager->FillH1(7, dev);
         }
     }
 
