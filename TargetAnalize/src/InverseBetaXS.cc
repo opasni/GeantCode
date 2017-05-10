@@ -10,9 +10,10 @@
 //
 G4_DECLARE_XS_FACTORY(InverseBetaXS);
 
-static const G4double weakCons =  0.015; // M*G^2*cos(th_C)^2/Pi
+static const G4double weakCons =  0.00799; // M*G^2*cos(th_C)^2/Pi
 
-static const G4double fitCons = 6.5; // Constant from cross section integration
+static const G4double fitConsA = 8.72; // Constant from cross section integration
+static const G4double fitConsB = -42.0; // Constant from cross section integration
 
 
 InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()), lastE(0), lastSig(0)
@@ -53,12 +54,8 @@ G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G
       // Calculate maximal cross section at theta = pi
       lastE = energyE;
 
-      // Scaling to value where differential cross section maximal (theta_l = Pi)
-      // G4double scalingF = 0;
-      // scalingF = 0.6567 + 1.198*energyE - 15.52*energyE*energyE + 28.38*energyE*energyE*energyE;
-
       // Calculate Cross section
-     	lastSig = weakCons * fitCons * energyE /** scalingF*/;
+     	lastSig = weakCons * (fitConsA*pow(energyE,2) + fitConsB*pow(energyE,4));
 
       if(lastSig<0.) lastSig = 0.;
 

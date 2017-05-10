@@ -38,14 +38,14 @@ public:
     //G4ElectroNuclearCrossSection* electroXS;
     InverseBetaXS* electroXS;
 
-    G4double CalculateProbability(G4double theta, G4double leptonKE);
+    G4double CalculateProbability(G4double theta);
 
     G4HadFinalState* theResult = new G4HadFinalState();
 
     void CalculateVert(G4double theta, G4ThreeVector momentE, G4double leptonKE);
 
-    const G4double M; // Mean mass of nucleai
 
+    const G4double M; // Mean mass of nucleai
     };
 
 #endif

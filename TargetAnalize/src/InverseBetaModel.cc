@@ -14,14 +14,9 @@
 #include "G4NeutrinoE.hh"
 #include "G4Neutron.hh"
 
-static const G4double mD = 0.843;
-static const G4double mA = 1.060;
-
-static const G4double gAC = 1.2673;
-static const G4double muNe = -1.913;
-static const G4double muP = 2.793;
-
-static const G4double fitCons = 6.5; // Constant from cross section integration
+static const G4double fitConsA = 0.162; // Constant from cross section integration
+static const G4double fitConsB = 0.069; // Constant from cross section integration
+static const G4double fitConsC = 0.021; // Constant from cross section integration
 
 InverseBetaModel::InverseBetaModel()
   : G4HadronicInteraction("InverseBetaModel"),
@@ -53,61 +48,33 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus&)
   G4double energyE = aTrack.GetKineticEnergy()/GeV; // Electron energy
   G4ThreeVector momentE = aTrack.Get4Momentum().vect().unit(); // Electron  momentum direction
 
-  G4double theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
-
-  G4double sigma = CalculateProbability(cos(theta), energyE);  // Calculate sigma(theta)/sigma(pi)
-  G4double prob = G4UniformRand();
-
+  G4double theta = 0;
+  G4double sigma = 0;
+  G4double prob = 1;
   // Applying actual distribution
-
-  if (prob < sigma)
+  while (1)
   {
-    theParticleChange.Clear();
-    theParticleChange.SetStatusChange(stopAndKill);
-
-    CalculateVert(theta, momentE, energyE); // Calculate the final state
-    return theResult;
-  }
-
-  else
-  {
-   // Set up default particle change (just returns initial state)
-    theParticleChange.Clear();
-    theParticleChange.SetStatusChange(isAlive);
-    energyE = aTrack.GetKineticEnergy();
-    theParticleChange.SetEnergyChange(energyE);
-
-    return &theParticleChange;
+    theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
+    sigma = CalculateProbability(theta);  // Calculate sigma(theta)/sigma(pi)
+    prob = G4UniformRand()*0.54;
+    if (prob < sigma)
+    {
+      theParticleChange.Clear();
+      theParticleChange.SetStatusChange(stopAndKill);
+      CalculateVert(theta, momentE, energyE); // Calculate the final state
+      return theResult;
+      break;
+    }
   }
 }
 
 ///////////////////////*****************************************************///////////////////////////
 
-G4double InverseBetaModel::CalculateProbability(G4double theta, G4double energyE)
+G4double InverseBetaModel::CalculateProbability(G4double theta)
 {
-
   // Calculate Probability
-
-  G4double enerL = energyE/(1 + (energyE*(1-theta)/M));
-  G4double enerN = energyE + M - enerL;
-
-  G4double Q2 = 2 * M * (energyE - enerL);
-  G4double tau = Q2/(4*M*M);
-
-  G4double GD = std::pow(1+(Q2/(mD*mD)),-2);
-  G4double gA = gAC * std::pow(1+(Q2/(mA*mA)),-2);
-  G4double gE = GD * (1 + (muNe * tau)/(1 + 5.6 * tau));
-  G4double gM = GD * (muP - muNe);
-
-  G4double f1, f2, f3;
-  f1 = gA*gA + tau * (gA*gA + gM*gM);
-  f2 = gA*gA + (gE*gE + tau * gM*gM)/(1 + tau);
-  f3 = 2 * gA * gM;
-
-  G4double enerpart = (enerL*enerL*enerN)/(energyE*energyE*M)*(1/fitCons);
-  G4double anglepart = f2 + (2*f1 - f2 + ((energyE + enerL)/M)*f3)*(1-theta)/2;
-
-  return (enerpart*anglepart);
+  G4double prob = fitConsA*theta + fitConsB*pow(theta,2) + fitConsC*pow(theta,3);
+  return prob;
 
 }
 
