@@ -7,16 +7,8 @@
 //#include ROOT
 void joinPR()
 {
-	Double_t events /*= 10000*/;
-	cin >> events;
-	cout << events << endl;
-	TString endfile /*= "InvBetaOff.root"*/;
-	cin >> endfile;
+	TString endfile = "TargetWallNeutron.root";
 	cout << endfile << endl;
-	TString invbeta /*= "InvBetaOff.root"*/;
-	cin >> invbeta;
-	cout << invbeta << endl;
-	// std::string endfile ("NuOffMagnet.root");
 	int n = 8;
 	//Double_t invbetaNorm;
 	//if (invbeta == "yes") invbetaNorm = TMath::Power(10, 13);
@@ -25,30 +17,32 @@ void joinPR()
 
 	Double_t energy_var_n;
 	Double_t time_var_n;
+	Double_t width_var_n;
+	Double_t depth_var_n;
 	Double_t theta_var_n;
-	// Char_t name_var_n;
+	Int_t hit_var_n;
 
 	TString start = TString("Project_t");
 	TString ending = TString(".root");
 
-	TH1D *neDEn = new TH1D("Energy", "",80,0,110);
-	TH1D *neDT = new TH1D("Time", "",80,0,200);
-	TH1D *neDVZ = new TH1D("Theta", "",50,0.165,0.515);
-	TH1D *neDVZN = new TH1D("ThetaN", "",10,0,0.2);
+	TH1D *h1E = new TH1D("Energy", "",40,17,19.5);
+	TH1D *h1T = new TH1D("Time", "",80,66,80);
+	TH1D *h1W = new TH1D("Width", "",40,10,120);
+	TH1D *h1D = new TH1D("Depth", "",80,0,500);
+	TH1D *h1Th = new TH1D("Theta", "",50,0.165,0.515);
+	TH1I *h1H = new TH1I("Hits", "",10,0,9);
 
-	TH1D *neDVZNo = new TH1D("ThetaNo", "",100,0,0.2);
-	double angledif;
-	for (int i = 1; i<=100; i++) {
-		angledif = std::cos((i-1)*(0.2/100))-std::cos((i)*(0.2/100));
-		neDVZNo->SetBinContent(i,2*3.14*250*250*angledif);
-	}
+	TH2D *h2ET = new TH2D("EnergyTime", "",40,17,19.5,80,66,80);
+	TH2D *h2EW = new TH2D("EnergyWidth", "",40,17,19.5,40,10,120);
+	TH2D *h2ETh = new TH2D("EnergyTheta", "",40,17,19.5,50,0.165,0.515);
+	TH2D *h2EH = new TH2D("EnergyHit", "",40,17,19.5,10,0,9);
 
+	TH2D *h2TW = new TH2D("TimeWidth", "",80,66,80,40,10,120);
+	TH2D *h2TTh = new TH2D("TimeTheta", "",80,66,80,50,0.165,0.515);
+	TH2D *h2TH = new TH2D("TimeHit", "",480,66,80,10,0,9);
 
-	TH2D *neDEnT = new TH2D("EnergyTime", "",80,0,110,80,0,200);
-	TH2D *neDEnV = new TH2D("EnergyTheta", "",30,0,110,30,0.165,0.515);
-
-	TH2D *neDTV = new TH2D("TimeTheta", "",80,0,200,100,0.165,0.515);
-
+	TH2D *h2WD = new TH2D("WidthDepth", "",40,10,120,80,0,500);
+	TH2D *h2WH = new TH2D("WidthHits", "",40,10,120,10,0,9);
 
 	Int_t j;
 	for (int j = 0; j < n; j++) {
@@ -58,28 +52,40 @@ void joinPR()
 		cout << input << endl;
 
 		TFile file0(input);
-		TString particle;
-		if (invbeta == "yes") particle = "Neutron";
-		else particle = "Gamma";
-		TTree *treeD0n; file0.GetObject(particle,treeD0n);
+		TTree *treeD0n; file0.GetObject("Hits",treeD0n);
 
 		Int_t nentries0n = Int_t(treeD0n->GetEntries());
-		treeD0n->SetBranchAddress("KE",&energy_var_n);
+		treeD0n->SetBranchAddress("Energy",&energy_var_n);
 		treeD0n->SetBranchAddress("Time",&time_var_n);
+		treeD0n->SetBranchAddress("Width",&width_var_n);
+		treeD0n->SetBranchAddress("Depth",&depth_var_n);
 		treeD0n->SetBranchAddress("Theta",&theta_var_n);
+		treeD0n->SetBranchAddress("Hit",&hit_var_n);
 		for (Int_t i=0; i<nentries0n; i++) {
 			treeD0n->GetEntry(i);
-			neDEn->Fill(energy_var_n);
-			neDT->Fill(time_var_n);
-			neDVZ->Fill(theta_var_n);
-			neDVZN->Fill(theta_var_n);
+			h1E->Fill(energy_var_n);
+			h1T->Fill(time_var_n);
+			h1W->Fill(width_var_n);
+			h1D->Fill(depth_var_n);
+			h1Th->Fill(theta_var_n);
+			h1H->Fill(hit_var_n);
 
-			neDEnT->Fill(energy_var_n,time_var_n);
-			neDEnV->Fill(energy_var_n,theta_var_n);
-
-			neDTV->Fill(time_var_n,theta_var_n);
+			h2ET->Fill(energy_var_n,time_var_n);
+			h2EW->Fill(energy_var_n,width_var_n);
+			h2ETh->Fill(energy_var_n,theta_var_n);
+			h2EH->Fill(energy_var_n,hit_var_n);
+			h2TW->Fill(time_var_n,width_var_n);
+			h2TTh->Fill(time_var_n,theta_var_n);
+			h2TH->Fill(time_var_n,hit_var_n);
+			h2WD->Fill(width_var_n,depth_var_n);
+			h2WH->Fill(width_var_n,hit_var_n);
 		}
 	}
+
+
+
+
+
 
 	//neDEn->Scale(rate);	neDT->Scale(rate);	neDVZ->Scale(rate);	neDVZN->Scale(rate);
 	//neDEnT->Scale(rate);	neDEnV->Scale(rate);
@@ -88,28 +94,40 @@ void joinPR()
 	// neDVZN->Divide(neDVZNo);
 
 
-	Double_t min;
-	min = neDEnT->GetMinimum(0); neDEnT->SetMinimum(min);
-	min = neDEnV->GetMinimum(0); neDEnV->SetMinimum(min);
-	min = neDTV->GetMinimum(0); neDTV->SetMinimum(min);
-
-	gStyle->SetOptStat(0);
-
-	neDEn->SetXTitle("Energy [MeV]");	neDEn->SetYTitle("Rate [s^{-1}]");
-	neDT->SetXTitle("Time [ns]");	neDT->SetYTitle("Rate [s^{-1}]");
-	neDVZ->SetXTitle("Theta [rad]");	neDVZ->SetYTitle("Rate [s^{-1}]");
-	neDVZN->SetXTitle("Theta [rad]");	neDVZN->SetYTitle("Rate [s^{-1}/cm^2]");
-
-	neDEnT->SetXTitle("Energy [MeV]");	neDEnT->SetYTitle("Time [ns]");	neDEnT->SetZTitle("Rate [s^{-1}]");
-	neDEnV->SetXTitle("Energy [MeV]");	neDEnV->SetYTitle("Theta [rad]");	neDEnV->SetZTitle("Rate [s^{-1}]");
-	neDTV->SetXTitle("Time [ns]");	neDTV->SetYTitle("Theta [rad]");	neDTV->SetZTitle("Rate [s^{-1}]");
+	// Double_t min;
+	// min = neDEnT->GetMinimum(0); neDEnT->SetMinimum(min);
+	// min = neDEnV->GetMinimum(0); neDEnV->SetMinimum(min);
+	// min = neDTV->GetMinimum(0); neDTV->SetMinimum(min);
+	//
+	// gStyle->SetOptStat(0);
+	//
+	// neDEn->SetXTitle("Energy [MeV]");	neDEn->SetYTitle("Rate [s^{-1}]");
+	// neDT->SetXTitle("Time [ns]");	neDT->SetYTitle("Rate [s^{-1}]");
+	// neDVZ->SetXTitle("Theta [rad]");	neDVZ->SetYTitle("Rate [s^{-1}]");
+	// neDVZN->SetXTitle("Theta [rad]");	neDVZN->SetYTitle("Rate [s^{-1}/cm^2]");
+	//
+	// neDEnT->SetXTitle("Energy [MeV]");	neDEnT->SetYTitle("Time [ns]");	neDEnT->SetZTitle("Rate [s^{-1}]");
+	// neDEnV->SetXTitle("Energy [MeV]");	neDEnV->SetYTitle("Theta [rad]");	neDEnV->SetZTitle("Rate [s^{-1}]");
+	// neDTV->SetXTitle("Time [ns]");	neDTV->SetYTitle("Theta [rad]");	neDTV->SetZTitle("Rate [s^{-1}]");
 
 
 	TFile fnew(endfile,"recreate");
 
-	neDEn->Write();	neDT->Write();	neDVZ->Write();	neDVZN->Write();
-	neDEnT->Write(); neDEnV->Write();
-	neDTV->Write();
+	h1E->Write();
+	h1T->Write();
+	h1W->Write();
+	h1D->Write();
+	h1Th->Write();
+	h1H->Write();
+	h2ET->Write();
+	h2EW->Write();
+	h2ETh->Write();
+	h2EH->Write();
+	h2TW->Write();
+	h2TTh->Write();
+	h2TH->Write();
+	h2WD->Write();
+	h2WH->Write();
 
 	fnew.Close();
 }

@@ -72,19 +72,16 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
 
-    G4int p0 = 0;
-
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
         HadCalorimeterHit* hit = (*hcHC)[i];
         G4double eDep = hit->GetEdep();
         if (eDep>0.)
         {
-          G4int layerNo = hit->GetLayerID();
-          G4int rowNo = hit->GetRowID();
+          // G4int layerNo = hit->GetLayerID();
+          // G4int rowNo = hit->GetRowID();
           // G4int columnNo = hit->GetColumnID();
-          G4int parentNo = hit->GetParentID();
-          if (parentNo==0) p0++;
+          // G4int parentNo = hit->GetParentID();
           G4double dtime = hit->GetTime();
           G4ThreeVector pos = hit->GetPos();
           G4ThreeVector posMean = hit->GetPosMean();
@@ -94,30 +91,45 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
           G4double ddepth = pos.getZ()-750;
 
-          if (dtime > 40) {
-            if (dtime < 60) analysisManager->FillH1(1, eDep);
-            if (dtime < 85) analysisManager->FillH1(2, eDep);
-            if (dtime < 125) analysisManager->FillH1(3, eDep);
-          }
-          analysisManager->FillH1(7, dwidth);
-          analysisManager->FillH1(8, ddepth);
+          analysisManager->FillNtupleDColumn(0, eDep/MeV);
+          analysisManager->FillNtupleDColumn(1, dtime/ns);
+          analysisManager->FillNtupleDColumn(2, dwidth/mm);
+          analysisManager->FillNtupleDColumn(3, ddepth/mm);
+          analysisManager->FillNtupleDColumn(4, theta);
+          analysisManager->FillNtupleIColumn(5, totalHadHit);
+          analysisManager->AddNtupleRow();
 
-          if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH1(4, dtime);
-          analysisManager->FillH1(6, parentNo);
-          analysisManager->FillH2(1, eDep, dtime);
-          analysisManager->FillH2(2, eDep, theta);
-          if ((dtime > 40)&&(dtime > 60)) analysisManager->FillH2(3, eDep, theta);
-          if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH2(4, dtime, theta);
-          analysisManager->FillH2(5, dwidth, ddepth);
 
+
+          // if (dtime > 70) {
+          //   if (dtime < 90) analysisManager->FillH1(1, eDep);
+          //   if (dtime < 110) analysisManager->FillH1(2, eDep);
+          //   if (dtime < 125) analysisManager->FillH1(3, eDep);
+          // }
+          // analysisManager->FillH1(7, dwidth);
+          // analysisManager->FillH1(8, ddepth);
+          //
+          // if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH1(4, dtime);
+          // analysisManager->FillH1(6, parentNo);
+          // analysisManager->FillH2(1, eDep, dtime);
+          // analysisManager->FillH2(2, eDep, theta);
+          // if ((dtime > 70)&&(dtime > 90)) {
+          //   analysisManager->FillH2(3, eDep, theta);
+          //   analysisManager->FillH2(5, eDep, dwidth);
+          // }
+          // if ((eDep < 19.5)&&(eDep>17)) {
+          //   analysisManager->FillH2(4, dtime, theta);
+          //   analysisManager->FillH2(6, dtime, dwidth);
+          // }
+          // analysisManager->FillH2(7, dwidth, ddepth);
+          //
           totalHadHit++;
           totalHadE += eDep;
         }
-        // if (p0>0) G4cout << p0<< G4endl;
         fHadCalEdep[i] = totalHadE;
-        if (totalHadHit!=0) {
-          analysisManager->FillH1(5, totalHadHit);
-        }
+        // if (totalHadHit!=0) {
+        //   analysisManager->FillH1(5, totalHadHit);
+        // }
     }
 
     //
