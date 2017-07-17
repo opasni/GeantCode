@@ -10,9 +10,13 @@
 //
 G4_DECLARE_XS_FACTORY(InverseBetaXS);
 
-static const G4double weakCons =  0.015; // M*G^2*cos(th_C)^2/Pi
+static const G4double massM1 = 0.00618; // Constant from cross section integration
+static const G4double massM2 = -0.656; // Constant from cross section integration
+static const G4double massM3 = 113.64; // Constant from cross section integration
+static const G4double massM4 = -159.29; // Constant from cross section integration
 
-static const G4double fitCons = 6.413; // Constant from cross section integration
+static const G4double nucleonMass = 0.939;
+static const G4double femtobarn = 0.001*picobarn;
 
 
 InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()), lastE(0), lastSig(0)
@@ -39,30 +43,18 @@ G4bool InverseBetaXS::IsElementApplicable(const G4DynamicParticle* /*aParticle*/
 
 G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G4int ZZ, const G4Material*)
 {
-
-  if ( ZZ != 1)  return 0.;
-
+  if ( ZZ != 1)  return 0.;                           // Računamo le za primer vodikovega atoma
   else
   {
-   	G4double energyE = aPart->GetKineticEnergy()/GeV; // Electron energy
-
-    if (energyE == lastE)  return lastSig*picobarn;// Don't calculate again
-
+   	G4double energyE = aPart->GetKineticEnergy()/GeV; // V našem primeru nas zanima le energija elektrona
+    if (energyE == lastE)  return lastSig*femtobarn;  // Če je energija enaka energiji prejšnjega ne računaj
     else
     {
-      // Calculate maximal cross section at theta = pi
-      lastE = energyE;
-
-      // Scaling to value where differential cross section maximal (theta_l = Pi)
-      G4double scalingF = 0;
-      scalingF = 0.6567 + 1.198*energyE - 15.52*energyE*energyE + 28.38*energyE*energyE*energyE;
-
-      // Calculate Cross section
-     	lastSig = weakCons * fitCons * energyE * scalingF;
-
-      if(lastSig<0.) lastSig = 0.;
-
-      return lastSig*picobarn;
+      lastE = energyE;                                // Predefiniramo za nadaljnje račune
+      // Izračun preseka preko parametrizacije
+      lastSig = massM1 + massM2*energyE + massM3*pow(energyE,2) + massM4*pow(energyE,3);
+      if(lastSig<0.) lastSig = 0.;                    // V primeru težav
+      return lastSig*femtobarn;                       // Vrnemo rezultat
     }
   }
 }

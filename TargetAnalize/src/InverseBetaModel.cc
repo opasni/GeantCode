@@ -14,14 +14,18 @@
 #include "G4NeutrinoE.hh"
 #include "G4Neutron.hh"
 
-static const G4double mD = 0.843;
-static const G4double mA = 1.060;
+static const G4double massM1 = 0.00309;     // Constant from cross section integration
+static const G4double massM2 = -0.328;      // Constant from cross section integration
+static const G4double massM3 = 56.87;       // Constant from cross section integration
+static const G4double massM4 = -79.70;      // Constant from cross section integration
 
-static const G4double gAC = 1.2673;
-static const G4double muNe = -1.913;
-static const G4double muP = 2.793;
-
-static const G4double fitCons = 6.413; // Constant from cross section integration
+static const G4double Mv2 = 0.711;          // Kvadrat dipolne mase
+static const G4double Ma2 = 1.053;
+static const G4double gA = -1.267;
+static const G4double aPar = 0.942:
+static const G4double bPar = 4.61;
+static const G4double mup = 2.793;
+static const G4double mun = -1.913;
 
 InverseBetaModel::InverseBetaModel()
   : G4HadronicInteraction("InverseBetaModel"),
@@ -50,28 +54,26 @@ G4HadFinalState*
 InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus&)
 {
 
-  G4double energyE = aTrack.GetKineticEnergy()/GeV; // Electron energy
-  G4ThreeVector momentE = aTrack.Get4Momentum().vect().unit(); // Electron  momentum direction
+  G4double energyE = aTrack.GetKineticEnergy()/GeV;             // Energija elektrona
+  G4ThreeVector momentE = aTrack.Get4Momentum().vect().unit();  // Smer gibalne količine e-
 
-  G4double theta = std::acos(2*G4UniformRand()-1); // Theta sphericaly
+  G4double theta = std::acos(2*G4UniformRand()-1);              // Žreb kota sipanja (nevtrino)
 
-  G4double sigma = CalculateProbability(theta, energyE);  // Calculate sigma(theta)/sigma(pi)
-  G4double prob = G4UniformRand();
+  G4double sigma = CalculateProbability(theta, energyE);        // Izračun  verjetnosti P
+  G4double prob = G4UniformRand();                              // Naključna vrednost
 
-  // Applying actual distribution
-
+  // Primerjamo sigma in prob ter sprejmemo proces v primeru da vrednost prob manjša
   if (prob < sigma)
   {
     theParticleChange.Clear();
-    theParticleChange.SetStatusChange(stopAndKill);
+    theParticleChange.SetStatusChange(stopAndKill);              // Izbrišemo elektron
 
-    CalculateVert(theta, momentE, energyE); // Calculate the final state
+    CalculateVert(theta, momentE, energyE);                      // Izračunamo končno stanje reakcije
     return theResult;
   }
-
+  // V primeru da je prob večji, elektron nadaljuje pot brez sipanja
   else
   {
-   // Set up default particle change (just returns initial state)
     theParticleChange.Clear();
     theParticleChange.SetStatusChange(isAlive);
     energyE = aTrack.GetKineticEnergy();
@@ -86,26 +88,40 @@ InverseBetaModel::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus&)
 G4double InverseBetaModel::CalculateProbability(G4double theta, G4double energyE)
 {
 
-  // Calculate Probability
-
-  G4double enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));
-  G4double enerN = energyE + M - enerL;
-
+  // Izračun kinematičnih spremenljivk
+  G4double enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));   // Energija nevtrina
   G4double Q2 = 2 * M * (energyE - enerL);
-  G4double tau = Q2/(4*M*M);
+  G4double tau = (energyE - enerL) / (2 * M);
+  G4double suM = 2 * (energyE + enerL) / M;
+  G4double Q2M = 2 * (energyE - enerL) /  M;
 
-  G4double GD = std::pow(1+(Q2/(mD*mD)),-2);
-  G4double gA = gAC * std::pow(1+(Q2/(mA*mA)),-2);
-  G4double gE = GD * (1 + (muNe * tau)/(1 + 5.6 * tau));
-  G4double gM = GD * (muP - muNe);
+  // Izračun strukturnih faktorjev
+  G4double GD, GA, GEp, GMp, GEn, GMn, gE, gM;
 
-  G4double f1, f2, f3;
-  f1 = gA*gA + tau * (gA*gA + gM*gM);
-  f2 = gA*gA + (gE*gE + tau * gM*gM)/(1 + tau);
-  f3 = 2 * gA * gM;
+  GD = 1/pow(1+Q2/Mv2,2);
+  GA = gA/pow(1+Q2/Ma2,2);
 
-  G4double enerpart = (enerL*enerL*enerN)/(energyE*energyE*M)*(1/fitCons);
-  G4double anglepart = f2 + (2*f1 - f2 + ((energyE + enerL)/M)*f3)*std::pow(std::sin(theta/2),2);
+  GEp = GD; GMp = mup*GD;
+  GEn = -mun * aPar * tau * GD / (1 + bPar*tau); GMn = mun * GD;
+  gE = GEp - GEn;
+  gM = GMp - GMn;
+
+  // Izračun strukturnih funkcij
+
+  G4double F1 = (gE + tau*gM) / (1 + tau);    // Povprečene vrednosti FF
+  G4double F2 = (gM - gE) / (1 + tau);
+  G4double FA = GA;
+
+  G4double Af = Q2M * ((1+tau)*FA*FA - (1-tau)*F1*F1 + (1-tau)*tau*F2*F2 + 4*tau*F1*F2);
+  G4double Bf = Q2M * FA * (F1 + F2);
+  G4double Cf = (FA*FA + F1*F1 + tau*F2*F2) / 4;
+
+  // Izračun energijskega in kotnega dela, pri čemer delimo diferencialni presek s celotnim
+
+  G4double enerpart = (2 * M*M * enerL*enerL) /
+                      (pow(energyE,2)*(massM1 + massM2*energyE + massM3*pow(energyE,2) + massM4*pow(energyE,4)));
+
+  G4double anglepart = Af + suM*Bf + suM*suM*Cf;
 
   return (enerpart*anglepart);
 
@@ -119,31 +135,31 @@ void InverseBetaModel::CalculateVert(G4double theta, G4ThreeVector momentE, G4do
   G4double phi = twopi*G4UniformRand();
 
   G4double enerL, enerN, mLep, mN, thN;
-  enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));
-  enerN = energyE + M - enerL;
-  mLep = enerL;
-  mN = std::sqrt(enerN*enerN - M*M);
-  thN = std::asin((mLep/mN)*std::sin(theta));
+  enerL = energyE/(1 + (2*energyE*std::pow(std::sin(theta/2),2)/M));    // Energija nevtrina
+  enerN = energyE + M - enerL;                                          // Energija nevtrona
+  mLep = enerL;                                                         // Gibalna količina nevtrina
+  mN = std::sqrt(enerN*enerN - M*M);                                    // Gibalna količina nevtrona
+  thN = std::asin((mLep/mN)*std::sin(theta));                           // Sipalni kot nevtrona
 
   G4ThreeVector momL;
     momL.setX(mLep * std::sin(theta) * std::sin(phi));
     momL.setY(mLep * std::sin(theta) * std::cos(phi));
     momL.setZ(mLep * std::cos(theta));
 
-  momL.rotateUz(momentE); // Rotation according to initial electron momentum
+  momL.rotateUz(momentE);                                                // Rotacija glede na začetno smer e-
 
-  G4double KinEnL = mLep*GeV; // Kinetic energy of neutron
+  G4double KinEnL = mLep*GeV;                                            // Kinetična energija nevtrina
 
   G4ThreeVector momN;
     momN.setX(mN * std::sin(thN) * std::sin(phi));
     momN.setY(mN * std::sin(thN) * std::cos(phi));
     momN.setZ(mN * std::cos(thN));
 
-  momN.rotateUz(momentE); // Rotation according to initial electron momentum
+  momN.rotateUz(momentE);                                                // Rotacija glede na začetno smer e-
 
-  G4double KinEnN = (enerN - M)*GeV; // Kinetic energy of neutron
+  G4double KinEnN = (enerN - M)*GeV;                                     // Kinetična energija nevtrona
 
-  // Particles definitions
+  // Definicija sekundarnih delcev
 
   G4DynamicParticle* theNeutrino = new G4DynamicParticle;
     theNeutrino->SetDefinition(G4NeutrinoE::Definition());
