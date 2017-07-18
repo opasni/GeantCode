@@ -66,7 +66,7 @@ void MyPhysicsList::ConstructParticle()
 
 void MyPhysicsList::ConstructProcess()
 {
-  InverseBetaProcess();
+  // InverseBetaProcess();
 
   AddTransportation();
 

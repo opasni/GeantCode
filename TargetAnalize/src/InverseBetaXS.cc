@@ -10,10 +10,9 @@
 //
 G4_DECLARE_XS_FACTORY(InverseBetaXS);
 
-static const G4double massM1 = 0.00618; // Constant from cross section integration
-static const G4double massM2 = -0.656; // Constant from cross section integration
-static const G4double massM3 = 113.64; // Constant from cross section integration
-static const G4double massM4 = -159.29; // Constant from cross section integration
+static const G4double massM1 = 4.693; // Constant from cross section integration
+static const G4double massM2 = 40.77; // Constant from cross section integration
+static const G4double massM3 = -28.72; // Constant from cross section integration
 
 static const G4double nucleonMass = 0.939;
 static const G4double femtobarn = 0.001*picobarn;
@@ -52,7 +51,7 @@ G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G
     {
       lastE = energyE;                                // Predefiniramo za nadaljnje račune
       // Izračun preseka preko parametrizacije
-      lastSig = massM1 + massM2*energyE + massM3*pow(energyE,2) + massM4*pow(energyE,3);
+      lastSig = pow(energyE,2) * pow(0.5*nucleonMass + energyE,-3) * (massM1 + energyE*(massM2 + massM3*energyE));
       if(lastSig<0.) lastSig = 0.;                    // V primeru težav
       return lastSig*femtobarn;                       // Vrnemo rezultat
     }

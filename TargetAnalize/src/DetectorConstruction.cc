@@ -113,7 +113,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4double window_thickness = 10*um;
 
   G4double outRlay1 = 2.5*cm;
-  G4double hz = 10*cm;
+  G4double hz = 20*cm;
   G4double startAngle = 0.*deg;
   G4double spanningAngle = 360.*deg;
   //G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm;
