@@ -2,7 +2,10 @@
 #include "EventAction.hh"
 #include "DetectorConstruction.hh"
 
+#include "G4Tubs.hh"
+
 #include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4Step.hh"
 #include "G4RunManager.hh"
 
@@ -33,13 +36,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
       G4int partN = 0;
       G4ThreeVector verpos = step->GetTrack()->GetVertexPosition();
       G4double posZ = verpos.getZ();
-      if (posZ>-60){
-        if (posZ<-50) partN=1;
-        else if (posZ>50) partN=2;
-        else if (sqrt(pow(verpos.getX(),2)+pow(verpos.getY(),2))>50) {partN=3;
-        G4cout << posZ << G4endl;
-      }
-        if (partN!=0) {
+      G4double tarZlen = fDetConstruction->GetTargetPV()->GetZHalfLength();
+      G4double tarRlen = fDetConstruction->GetTargetPV()->GetOuterRadius();
+      if (posZ>-tarZlen+10*mm){
+        if (posZ<-tarZlen) partN=1;
+        else if (posZ>tarZlen) partN=2;
+        else if (sqrt(pow(verpos.getX(),2)+pow(verpos.getY(),2))>tarRlen) partN=3;
+        else if (sqrt(pow(verpos.getX(),2)+pow(verpos.getY(),2))<tarRlen) partN=4;
+      // if (partN!=0) {
           // if (partN!=1) G4cout << partN << G4endl;
           G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
 
@@ -52,7 +56,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
           fEventAction->AddData(Theta, energy, partN, name, process);
 
-        }
+        // }
       }
       step->GetTrack()->SetTrackStatus(fStopAndKill);
   }

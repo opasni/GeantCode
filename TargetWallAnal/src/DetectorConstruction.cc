@@ -113,7 +113,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4double window_thickness = 10*um;
 
   G4double outRlay1 = 2.5*cm;
-  G4double hz = 10*cm;
+  G4double hz = 20*cm; 
   G4double startAngle = 0.*deg;
   G4double spanningAngle = 360.*deg;
   //G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm;
@@ -146,12 +146,13 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   new G4PVPlacement(0, laypos3, logictarlayer3, "Target Wind 2", logictar, false, 0, fCheckOverlaps);
 
   //
-  // Target True
+  // Target True fTargetTub =
 
   G4ThreeVector pos1a = G4ThreeVector(0, 0, 0);
   G4Tubs* solidtarget = new G4Tubs("Target Center", 0.*cm, outRlay1, 0.5*hz, startAngle, spanningAngle);
+  fTargetTub = solidtarget;
   G4LogicalVolume* logictarget = new G4LogicalVolume(solidtarget, lH2, "Target Center");
-  fTargetPV = new G4PVPlacement(0, pos1a, logictarget, "Target Center", logictar, false, 0, fCheckOverlaps);
+  new G4PVPlacement(0, pos1a, logictarget, "Target Center", logictar, false, 0, fCheckOverlaps);
 
   //
   // Scintillator

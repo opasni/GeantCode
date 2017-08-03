@@ -6,6 +6,7 @@
 #include "globals.hh"
 
 class G4VPhysicalVolume;
+class G4Tubs;
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
@@ -20,7 +21,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // get methods
     //
     const G4VPhysicalVolume* GetAbsorberPV() const;
-    const G4VPhysicalVolume* GetTargetPV() const;
+    const G4Tubs* GetTargetPV() const;
 
   private:
     // methods
@@ -32,7 +33,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // data members
     //                                      // magnetic field messenger
     G4VPhysicalVolume*   fAbsorberPV; // the absorber physical volume
-    G4VPhysicalVolume*   fTargetPV;
+    G4Tubs*   fTargetTub;
     G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps
     G4String ftarmat;
 };
@@ -44,10 +45,9 @@ inline const G4VPhysicalVolume* DetectorConstruction::GetAbsorberPV() const {
   return fAbsorberPV;
 }
 
-inline const G4VPhysicalVolume* DetectorConstruction::GetTargetPV() const {
-  return fTargetPV;
+inline const G4Tubs* DetectorConstruction::GetTargetPV() const {
+  return fTargetTub;
 }
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
