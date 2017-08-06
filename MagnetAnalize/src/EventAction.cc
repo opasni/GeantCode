@@ -58,17 +58,19 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
   for (G4int i=0; i<fnSensed; i++) {
     // if (fprocess[i] == "photonNuclear") G4cout << fTheta[i] << G4endl;
-    if (fname[i]=="gamma") {gam++; ntupleID = 0;}
+    if (fname[i]=="gamma") {gam++; ntupleID = 0;continue;}
     else if (fname[i]=="e-") {em++; ntupleID = 1;}
     else if (fname[i]=="proton") {p++; ntupleID = 2;}
-    else if (fname[i]=="neutron") {n++; ntupleID = 3;}
+    else if (fname[i]=="neutron") {n++; ntupleID = 3;continue;}
 
-    analysisManager->FillNtupleDColumn(ntupleID, 0, fenergy[i]/MeV);
-    analysisManager->FillNtupleDColumn(ntupleID, 1, ftime[i]);
-    analysisManager->FillNtupleDColumn(ntupleID, 2, fPhi[i]);
-    analysisManager->FillNtupleDColumn(ntupleID, 3, fTheta[i]);
-    // analysisManager->FillNtupleSColumn(ntupleID, 5, fprocess[i]);
-    analysisManager->AddNtupleRow(ntupleID);
+    if ((fTheta[i]<0.515)&&(0.165<fTheta[i])){
+      analysisManager->FillNtupleDColumn(ntupleID, 0, fenergy[i]/MeV);
+      analysisManager->FillNtupleDColumn(ntupleID, 1, ftime[i]);
+      analysisManager->FillNtupleDColumn(ntupleID, 2, fPhi[i]);
+      analysisManager->FillNtupleDColumn(ntupleID, 3, fTheta[i]);
+      // analysisManager->FillNtupleSColumn(ntupleID, 5, fprocess[i]);
+      analysisManager->AddNtupleRow(ntupleID);
+    }
   }
   analysisManager->FillH1(1, gam);
   analysisManager->FillH1(2, em);
