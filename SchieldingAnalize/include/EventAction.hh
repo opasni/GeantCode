@@ -21,7 +21,7 @@ class EventAction : public G4UserEventAction
     virtual void    EndOfEventAction(const G4Event* event);
 
     void AddData(G4double theta, G4double energy,
-                 G4double time, G4String name, G4String process);
+                 G4double timed, G4String name, G4String process);
 
 
   private:
@@ -37,10 +37,10 @@ class EventAction : public G4UserEventAction
 // inline functions
 
 inline void EventAction::AddData(G4double theta, G4double energy,
-                                 G4double time, G4String name, G4String process) {
+                                 G4double timed, G4String name, G4String process) {
   fTheta.push_back(theta);
   fEnergy.push_back(energy);
-  fTime.push_back(time);
+  fTime.push_back(timed);
   fName.push_back(name);
   fProcess.push_back(process);
   fNSensed++;

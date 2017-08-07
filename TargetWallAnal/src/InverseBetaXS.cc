@@ -10,10 +10,12 @@
 //
 G4_DECLARE_XS_FACTORY(InverseBetaXS);
 
-static const G4double weakCons =  0.00799; // M*G^2*cos(th_C)^2/Pi
+static const G4double massM1 = 4.693; // Constant from cross section integration
+static const G4double massM2 = 40.77; // Constant from cross section integration
+static const G4double massM3 = -28.72; // Constant from cross section integration
 
-static const G4double fitConsA = 8.72; // Constant from cross section integration
-static const G4double fitConsB = -42.0; // Constant from cross section integration
+static const G4double nucleonMass = 0.939;
+static const G4double femtobarn = 0.001*picobarn;
 
 
 InverseBetaXS::InverseBetaXS():G4VCrossSectionDataSet(Default_Name()), lastE(0), lastSig(0)
@@ -40,26 +42,18 @@ G4bool InverseBetaXS::IsElementApplicable(const G4DynamicParticle* /*aParticle*/
 
 G4double InverseBetaXS::GetElementCrossSection(const G4DynamicParticle* aPart, G4int ZZ, const G4Material*)
 {
-
-  if ( ZZ != 1)  return 0.;
-
+  if ( ZZ != 1)  return 0.;                           // Računamo le za primer vodikovega atoma
   else
   {
-   	G4double energyE = aPart->GetKineticEnergy()/GeV; // Electron energy
-
-    if (energyE == lastE)  return lastSig*picobarn;// Don't calculate again
-
+   	G4double energyE = aPart->GetKineticEnergy()/GeV; // V našem primeru nas zanima le energija elektrona
+    if (energyE == lastE)  return lastSig*femtobarn;  // Če je energija enaka energiji prejšnjega ne računaj
     else
     {
-      // Calculate maximal cross section at theta = pi
-      lastE = energyE;
-
-      // Calculate Cross section
-     	lastSig = weakCons * (fitConsA*pow(energyE,2) + fitConsB*pow(energyE,4));
-
-      if(lastSig<0.) lastSig = 0.;
-
-      return lastSig*picobarn;
+      lastE = energyE;                                // Predefiniramo za nadaljnje račune
+      // Izračun preseka preko parametrizacije
+      lastSig = pow(energyE,2) * pow(0.5*nucleonMass + energyE,-3) * (massM1 + energyE*(massM2 + massM3*energyE));
+      if(lastSig<0.) lastSig = 0.;                    // V primeru težav
+      return lastSig*femtobarn;                       // Vrnemo rezultat
     }
   }
 }

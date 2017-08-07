@@ -10,7 +10,7 @@ class G4VPhysicalVolume;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    DetectorConstruction(G4String tarmat);
+    DetectorConstruction(G4double shield);
     virtual ~DetectorConstruction();
 
   public:
@@ -36,7 +36,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4VPhysicalVolume*   fKillerPV; // the absorber physical volume
     G4VPhysicalVolume*   fTargetPV;
     G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps
-    G4String ftarmat;
+    G4double fShieldThick;
 };
 
 

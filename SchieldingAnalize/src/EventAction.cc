@@ -51,13 +51,21 @@ void EventAction::EndOfEventAction(const G4Event* event)
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
   //std::vector<G4int> parNID;
+  G4int ntupleID;
+  int gam=0; int n=0;
+
   for (G4int i=0; i<fNSensed; i++) {
-    analysisManager->FillNtupleDColumn(0, fEnergy[i]/MeV);
-    analysisManager->FillNtupleDColumn(1, fTheta[i]);
-    analysisManager->FillNtupleDColumn(2, fTime[i]);
-    analysisManager->FillNtupleSColumn(3, fName[i]);
-    analysisManager->FillNtupleSColumn(4, fProcess[i]);
-    analysisManager->AddNtupleRow();
+    // if (fprocess[i] == "photonNuclear") G4cout << fTheta[i] << G4endl;
+    if (fName[i]=="gamma") {gam++; ntupleID = 0;}
+    else if (fName[i]=="neutron") {n++; ntupleID = 1;}
+
+    if ((fTheta[i]<0.515)&&(0.165<fTheta[i])){
+      analysisManager->FillNtupleDColumn(ntupleID, 0, fEnergy[i]/MeV);
+      analysisManager->FillNtupleDColumn(ntupleID, 1, fTime[i]);
+      analysisManager->FillNtupleDColumn(ntupleID, 2, fTheta[i]);
+      analysisManager->FillNtupleSColumn(ntupleID, 3, fProcess[i]);
+      analysisManager->AddNtupleRow(ntupleID);
+    }
   }
   //
   // Print per event (modulo n)

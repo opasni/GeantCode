@@ -24,13 +24,16 @@ RunAction::RunAction()
 
   // Creating ntuple
   //
-  analysisManager->CreateNtuple("TargetWall", "g");
-  analysisManager->CreateNtupleDColumn("KE");
-  analysisManager->CreateNtupleDColumn("Theta");
-  analysisManager->CreateNtupleDColumn("Time");
-  analysisManager->CreateNtupleSColumn("Name");
-  analysisManager->CreateNtupleSColumn("Process");
-  analysisManager->FinishNtuple();
+  analysisManager->CreateNtuple("Gamma", "g");
+  analysisManager->CreateNtuple("Neutron", "n");
+
+  for (int i = 0; i < 2; i++) {
+    analysisManager->CreateNtupleDColumn(i,"KE");
+    analysisManager->CreateNtupleDColumn(i,"Time");
+    analysisManager->CreateNtupleDColumn(i,"Theta");
+    analysisManager->CreateNtupleSColumn(i,"Process");
+    analysisManager->FinishNtuple(i);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

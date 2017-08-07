@@ -179,7 +179,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   G4Sphere* solidscintP = new G4Sphere("Scintillator Part", scint_Rmin, scint_Rmax, scint_PhiS, scint_PhiD, scint_ThetaS, 0.5*scint_ThetaD);
   G4LogicalVolume* logicscintP = new G4LogicalVolume(solidscintP, scint_mat, "Scintillator Part");
-  new G4PVPlacement(0, scint_pos, logicscintP, "Scintillator PArt", logicWorld, false, 0, fCheckOverlaps);
+  new G4PVPlacement(0, scint_pos, logicscintP, "Scintillator PArt", logicWorld, false, 0, false);
 
     //
     // Magnet

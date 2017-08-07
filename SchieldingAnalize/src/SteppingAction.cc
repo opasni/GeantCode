@@ -32,7 +32,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4VPhysicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
   if (volume == fDetConstruction->GetKillerPV()) {
       G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
-      if (name == "e-") step->GetTrack()->SetTrackStatus(fStopAndKill);
+      if ((name == "proton")||(name == "e-")) step->GetTrack()->SetTrackStatus(fStopAndKill);
   }
   else if (volume == fDetConstruction->GetAbsorberPV()) {
       G4double Theta = step->GetTrack()->GetPosition().getTheta();
@@ -44,10 +44,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         G4double timeglob = step->GetTrack()->GetGlobalTime();
 
         G4String process = step->GetTrack()->GetCreatorProcess()->GetProcessName();
+        // G4String process = " ";
 
         G4double energy = step->GetTrack()->GetKineticEnergy();
-
-        fEventAction->AddData(Theta, energy, timeglob, name, process);
+        if ((name == "gamma")||(name == "neutron")) fEventAction->AddData(Theta, energy, timeglob, name, process);
       // }
       step->GetTrack()->SetTrackStatus(fStopAndKill);
   }

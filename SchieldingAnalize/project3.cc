@@ -42,17 +42,17 @@ int main(int argc,char** argv)
   G4VSteppingVerbose::SetInstance(new SteppingVerbose);
   G4RunManager* runManager = new G4RunManager;
 #endif
-  G4String targetwallmat, bremmstralung;
-  G4cout << "Do you want target wall?" << G4endl;
-  // G4cin >> targetwallmat;
-  targetwallmat = "yes";
-  G4cout << "Target cell Material set to: " << targetwallmat << G4endl;
+  G4String bremmstralung;
+  G4double shieldthick;
+  G4cout << "Thickness of Sheield?" << G4endl;
+  G4cin >> shieldthick;
+  G4cout << "Shield thicness set to: " << shieldthick << G4endl;
   G4cout << "Bremmstralung on?" << G4endl;
   // G4cin >> bremmstralung;
   bremmstralung = "yes";
   G4cout << "Bremmstralung set to: " << bremmstralung << G4endl;
   // Set mandatory initialization classes
-  DetectorConstruction* detConstruction = new DetectorConstruction(targetwallmat);
+  DetectorConstruction* detConstruction = new DetectorConstruction(shieldthick);
   // Set mandatory initialization classes
   runManager->SetUserInitialization(detConstruction);
 
