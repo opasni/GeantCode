@@ -208,7 +208,8 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   G4double schieldINXY = tan(0.165)*(scheld_Z+scheld_thick);
   // G4double schieldINXY = 0;
-  G4double schieldXY = tan(0.515)*scheld_Z/sqrt(2);
+  // G4double schieldXY = tan(0.515)*scheld_Z/sqrt(2);
+  G4double schieldXY = tan(0.515)*scheld_Z;
 
   // G4VSolid* boxS1 = new G4Box("BoxS #1",schieldXY,schieldXY,0.5*scheld_thick);
   // G4VSolid* boxS2 = new G4Box("BoxS #2",schieldINXY,schieldINXY,0.5*scheld_thick);

@@ -53,6 +53,7 @@ set(PROJECT3_SCRIPTS
   run1.mac
   run2.mac
   vis.mac
+  getNumber.c
   script.sh
   )
 

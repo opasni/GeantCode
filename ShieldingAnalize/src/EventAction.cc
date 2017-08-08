@@ -55,11 +55,10 @@ void EventAction::EndOfEventAction(const G4Event* event)
   int gam=0; int n=0;
 
   for (G4int i=0; i<fNSensed; i++) {
-    // if (fprocess[i] == "photonNuclear") G4cout << fTheta[i] << G4endl;
-    if (fName[i]=="gamma") {gam++; ntupleID = 0;}
-    else if (fName[i]=="neutron") {n++; ntupleID = 1;}
-
     if ((fTheta[i]<0.515)&&(0.165<fTheta[i])){
+      if (fName[i]=="gamma") {gam++; ntupleID = 0;}
+      else if (fName[i]=="neutron") {n++; ntupleID = 1;}
+
       analysisManager->FillNtupleDColumn(ntupleID, 0, fEnergy[i]/MeV);
       analysisManager->FillNtupleDColumn(ntupleID, 1, fTime[i]);
       analysisManager->FillNtupleDColumn(ntupleID, 2, fTheta[i]);
@@ -67,6 +66,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
       analysisManager->AddNtupleRow(ntupleID);
     }
   }
+  analysisManager->FillH1(1, gam);
+  analysisManager->FillH1(2, n);
   //
   // Print per event (modulo n)
   //

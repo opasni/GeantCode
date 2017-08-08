@@ -37,15 +37,16 @@ int main(int argc,char** argv)
 #ifdef G4MULTITHREADED
   G4MTRunManager* runManager = new G4MTRunManager;
   runManager->SetNumberOfThreads(G4Threading::G4GetNumberOfCores());
+  // runManager->SetNumberOfThreads(4);
 #else
   //my Verbose output class
   G4VSteppingVerbose::SetInstance(new SteppingVerbose);
   G4RunManager* runManager = new G4RunManager;
 #endif
   G4String bremmstralung;
-  G4double shieldthick;
+  G4double shieldthick = 1;
   G4cout << "Thickness of Sheield?" << G4endl;
-  G4cin >> shieldthick;
+  // G4cin >> shieldthick;
   G4cout << "Shield thicness set to: " << shieldthick << G4endl;
   G4cout << "Bremmstralung on?" << G4endl;
   // G4cin >> bremmstralung;
