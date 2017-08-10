@@ -2,11 +2,11 @@
 #include "G4IonPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4EmStandardPhysics_option2.hh"
-#include "EmExtraPhysics.hh"
+#include "G4EmExtraPhysics.hh"
 #include "G4StoppingPhysics.hh"
 #include "G4HadronPhysicsQGSP_BERT.hh"
 #include "G4HadronElasticPhysics.hh"
-#include "EmLivermorePhysics.hh"
+#include "G4EmLivermorePhysics.hh"
 
 #include "MyPhysicsList.hh"
 
@@ -26,8 +26,8 @@
 #include "G4LossTableManager.hh"
 #include "G4ProcessManager.hh"
 
-MyPhysicsList::MyPhysicsList(G4String bremm)
- : fbremm(bremm)
+MyPhysicsList::MyPhysicsList(G4String invbeta)
+ : finvbeta(invbeta)
 {
   G4LossTableManager::Instance();
   defaultCutValue = 0.7*mm;
@@ -66,7 +66,7 @@ void MyPhysicsList::ConstructParticle()
 
 void MyPhysicsList::ConstructProcess()
 {
-  InverseBetaProcess();
+  if (finvbeta == "yes") InverseBetaProcess();
 
   AddTransportation();
 
@@ -100,7 +100,7 @@ void MyPhysicsList::InverseBetaProcess()
 
   aProcMan = G4Electron::Electron()->GetProcessManager();
   theElectronNuclearProcess->RegisterMe(theElectroReaction);
-  theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,10));
+  theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,13));
 
   aProcMan->AddDiscreteProcess(theElectronNuclearProcess);
 

@@ -34,8 +34,8 @@ RunAction::RunAction()
     analysisManager->CreateNtupleSColumn(i,"Process");
     analysisManager->FinishNtuple(i);
   }
-  analysisManager->CreateH1("PartNumN","Stevilo nevtronov na dogodek", 100, 0, 100);
-  analysisManager->CreateH1("PartNumG","Stevilo fotonov na dogodek", 100, 0, 100);
+  analysisManager->CreateH1("PartNumG","Stevilo nevtronov na dogodek", 100, 0, 100);
+  analysisManager->CreateH1("PartNumN","Stevilo fotonov na dogodek", 100, 0, 100);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

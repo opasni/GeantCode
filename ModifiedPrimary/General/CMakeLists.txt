@@ -51,11 +51,16 @@ set(PROJECT3_SCRIPTS
   run.png
   init_vis.mac
   run1.mac
-  run2.mac
+  runT.mac
+  joinPR.c
   vis.mac
-  getNumber.c
-  getMean.c
-  script.sh
+  GET
+  GET10
+  NIBET
+  NIBET10
+  NIBETSe
+  NTarET
+  NTarET10
   )
 
 foreach(_script ${PROJECT3_SCRIPTS})

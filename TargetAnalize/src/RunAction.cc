@@ -39,9 +39,11 @@ RunAction::RunAction()
   analysisManager->FinishNtuple(i);
   }
   analysisManager->CreateH1("PartNumG","Gamma Number per event", 100, 0, 100);
-  analysisManager->CreateH1("PartNumE","Electron Number per event", 100, 0, 100);
-  analysisManager->CreateH1("PartNumP","Proton Number per event", 100, 0, 100);
+  // analysisManager->CreateH1("PartNumE","Electron Number per event", 100, 0, 100);
+  // analysisManager->CreateH1("PartNumP","Proton Number per event", 100, 0, 100);
   analysisManager->CreateH1("PartNumN","Neutron Number per event", 100, 0, 100);
+  analysisManager->CreateH1("ThetaG","Kotna porazdelitev", 50, 0, 3.14);
+  analysisManager->CreateH1("ThetaN","Kotna porazdelitev", 50, 0, 3.14);;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

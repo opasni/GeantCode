@@ -110,21 +110,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int PrimaryGeneratorAction::GetIntTheta(G4double val)
-{
-  std::vector <G4double>* data = &fthetas;
-
-  if (val < data->at(0)) return 0;
-  else if (val > data->at(fnumY-1)) return fnumY-1;
-
-  double delta = (val - data->at(0))/fdnY;
-  G4int out = (G4int) delta;
-  if ((delta - out) < 0.5) return out;
-  else return out+1;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4double PrimaryGeneratorAction::EnergyProbDist(G4double ran) {
   G4double val;
   // val = pow((pow(0.05,-0.7)-pow(0.1,-0.7)*ran+pow(0.1,-0.7)),-(1/0.7));
@@ -135,20 +120,32 @@ G4double PrimaryGeneratorAction::EnergyProbDist(G4double ran) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+G4int PrimaryGeneratorAction::GetIntTheta(G4double val)
+{
+  std::vector <G4double>* data = &fthetas;                // Vektor z kotami v središčih intervalov
+    // Preverimo če smo pred prvim ali za zadnjim kotnim intervalom
+  if (val < data->at(0)) return 0;                        
+  else if (val > data->at(fnumY-1)) return fnumY-1;
+    // Pozicijo preprosto izračunamo iz širine intervala. Preverimo kateremu intervalu smo bližje
+  double delta = (val - data->at(0))/fdnY;
+  G4int nth = (G4int) delta;
+  if ((delta - nth) < 0.5) return nth;
+  else return nth+1;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 G4double PrimaryGeneratorAction::GetInterpProb(G4double energy, G4int nth) {
   G4double k, n;
+    // Preverimo če smo pred prvim ali za zadnjim energijskim intervalom
   if(energy < fenergys[0]) return fvalues[nth][0];
   if (energy > fenergys[fnumX-1]) return fvalues[nth][fnumX-1];
-
+    // Izračunamo katera v vrsti sta sosednja intervala
   double delta = (energy - fenergys[0])/fdnX;
   G4int out = (G4int) delta;
-
+    // Sosednjima podatkoma prilagodimo premico (izračunamo naklon k in začetno vrednost n)
   k = (fvalues[nth][out]-fvalues[nth][out+1])/(fenergys[out]-fenergys[out+1]);
   n = (fvalues[nth][out+1]*fenergys[out]-fvalues[nth][out]*fenergys[out+1])/(fenergys[out]-fenergys[out+1]);
-
   G4double probab = (k*energy + n);
-  // G4cout << k << ' ' << energy << ' ' << n << G4endl;
-  // G4cout << fvalues[nth][out] << ' ' << probab << ' ' << fvalues[nth][out+1] << G4endl;
-
   return probab;
 }

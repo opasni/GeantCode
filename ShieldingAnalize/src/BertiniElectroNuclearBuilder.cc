@@ -68,12 +68,12 @@ void G4BertiniElectroNuclearBuilder::Build()
   theModel->SetMinEnergy(3.*GeV);
   theModel->SetMaxEnergy(100*TeV);
   thePhotoNuclearProcess->RegisterMe(theModel);
-  thePhotoNuclearProcess->MultiplyCrossSectionBy(pow(10,6));
+  // thePhotoNuclearProcess->MultiplyCrossSectionBy(pow(10,7));
   aProcMan->AddDiscreteProcess(thePhotoNuclearProcess);
 
   aProcMan = G4Electron::Electron()->GetProcessManager();
   theElectronNuclearProcess->RegisterMe(theElectroReaction);
-  theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,6));
+  // theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,7));
   aProcMan->AddDiscreteProcess(theElectronNuclearProcess);
 
   aProcMan = G4Positron::Positron()->GetProcessManager();

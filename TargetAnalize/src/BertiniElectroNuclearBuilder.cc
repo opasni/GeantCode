@@ -12,28 +12,28 @@
 #include "G4ProcessManager.hh"
 
 
-G4BertiniElectroNuclearBuilder::G4BertiniElectroNuclearBuilder() : 
-    thePhotoNuclearProcess(0), theElectronNuclearProcess(0), 
-    thePositronNuclearProcess(0), theElectroReaction(0), 
-    theGammaReaction(0), theModel(0), theCascade(0), 
-    theStringModel(0), theFragmentation(0), theStringDecay(0), 
+G4BertiniElectroNuclearBuilder::G4BertiniElectroNuclearBuilder() :
+    thePhotoNuclearProcess(0), theElectronNuclearProcess(0),
+    thePositronNuclearProcess(0), theElectroReaction(0),
+    theGammaReaction(0), theModel(0), theCascade(0),
+    theStringModel(0), theFragmentation(0), theStringDecay(0),
    wasActivated(false)
 {
 }
 
-G4BertiniElectroNuclearBuilder::~G4BertiniElectroNuclearBuilder() 
+G4BertiniElectroNuclearBuilder::~G4BertiniElectroNuclearBuilder()
 {
   if(wasActivated) {
     delete theFragmentation;
     delete theStringDecay;
     //delete theStringModel;
-    //delete thePhotoNuclearProcess; 
+    //delete thePhotoNuclearProcess;
     //delete theElectronNuclearProcess;
     //delete thePositronNuclearProcess;
     //delete theElectroReaction;
     //delete theGammaReaction;
     //delete theModel;
-    //delete theCascade; 
+    //delete theCascade;
   }
 }
 
@@ -41,7 +41,7 @@ void G4BertiniElectroNuclearBuilder::Build()
 {
   if(wasActivated) return;
   wasActivated=true;
-  
+
   thePhotoNuclearProcess = new G4PhotoNuclearProcess;
   theElectronNuclearProcess = new G4ElectronNuclearProcess;
   thePositronNuclearProcess = new G4PositronNuclearProcess;
@@ -61,23 +61,22 @@ void G4BertiniElectroNuclearBuilder::Build()
   theModel->SetHighEnergyGenerator(theStringModel);
 
   G4ProcessManager * aProcMan = 0;
-  
+
   aProcMan = G4Gamma::Gamma()->GetProcessManager();
   theGammaReaction->SetMaxEnergy(3.5*GeV);
   thePhotoNuclearProcess->RegisterMe(theGammaReaction);
   theModel->SetMinEnergy(3.*GeV);
   theModel->SetMaxEnergy(100*TeV);
   thePhotoNuclearProcess->RegisterMe(theModel);
-  // thePhotoNuclearProcess->MultiplyCrossSectionBy(pow(10,10));
+  thePhotoNuclearProcess->MultiplyCrossSectionBy(pow(10,6));
   aProcMan->AddDiscreteProcess(thePhotoNuclearProcess);
-  
+
   aProcMan = G4Electron::Electron()->GetProcessManager();
   theElectronNuclearProcess->RegisterMe(theElectroReaction);
-  // theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,10));
+  theElectronNuclearProcess->MultiplyCrossSectionBy(pow(10,6));
   aProcMan->AddDiscreteProcess(theElectronNuclearProcess);
-  
+
   aProcMan = G4Positron::Positron()->GetProcessManager();
   thePositronNuclearProcess->RegisterMe(theElectroReaction);
   aProcMan->AddDiscreteProcess(thePositronNuclearProcess);
 }
-
