@@ -1,0 +1,16 @@
+# Macro file for project
+# 
+# To be run preferably in batch, without graphics:
+#
+# Set seeds
+/random/setSeeds 22 33
+#
+#/run/numberOfWorkers 4
+/run/initialize
+#
+# Default kinemtics: 
+# electron 110 MeV in direction (0.,0.,1.)
+# 100000 events
+#
+/run/printProgress 10000000
+/run/beamOn 1000000000

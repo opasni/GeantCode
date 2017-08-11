@@ -1,0 +1,266 @@
+#include "DetectorConstruction.hh"
+// #include "ParameterisationCube.hh"
+#include "ParameterisationSphere.hh"
+#include "HadCalorimeterSD.hh"
+
+#include "G4FieldManager.hh"
+#include "G4TransportationManager.hh"
+#include "G4Mag_UsualEqRhs.hh"
+#include "G4AutoDelete.hh"
+
+#include "G4Material.hh"
+#include "G4Element.hh"
+#include "G4MaterialTable.hh"
+#include "G4NistManager.hh"
+
+#include "G4VSolid.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4Box.hh"
+#include "G4Tubs.hh"
+#include "G4Sphere.hh"
+
+#include "G4LogicalVolume.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4PVPlacement.hh"
+#include "G4PVParameterised.hh"
+#include "G4VNestedParameterisation.hh"
+#include "G4PVReplica.hh"
+
+#include "G4UserLimits.hh"
+#include "G4SDManager.hh"
+#include "G4VSensitiveDetector.hh"
+#include "G4RunManager.hh"
+#include "G4GenericMessenger.hh"
+
+#include "G4VisAttributes.hh"
+#include "G4Colour.hh"
+
+#include "G4ios.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+DetectorConstruction::DetectorConstruction()
+: G4VUserDetectorConstruction(),
+  fcheckOverlaps(true),
+  fMessenger(0),
+  fHadCalScintiPV(0),
+  fscintScintLogical(0),
+  fVisAttributes(),
+  fnofLayers(30),
+  fnofLayersZ(3)
+{
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+DetectorConstruction::~DetectorConstruction()
+{
+    delete fMessenger;
+    for (G4int i=0; i<G4int(fVisAttributes.size()); ++i)
+    {
+      delete fVisAttributes[i];
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4VPhysicalVolume* DetectorConstruction::Construct()
+{
+  // Construct materials
+  ConstructMaterials();
+
+  G4Material* vacuum = G4Material::GetMaterial("Galactic");
+
+  G4Material* polyeth = G4Material::GetMaterial("G4_POLYETHYLENE");
+  G4Material* lead = G4Material::GetMaterial("G4_Pb");
+
+  std::vector<G4Material*> detectMat(3,polyeth);
+  detectMat[1]=vacuum;
+  detectMat[2]=lead;
+
+  //G4Material* aluminium = G4Material::GetMaterial("Galactic");
+  G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
+  G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
+
+  std::vector<G4Material*> tarMat(3,vacuum);
+  tarMat[1]=tarwall_mat;
+  tarMat[2]=tarwind_mat;
+
+
+
+  //
+  // World
+  //
+
+  G4bool checkOverlaps = fcheckOverlaps;
+  G4double world_sizeX = 300*cm;
+  G4double world_sizeY = 300*cm;
+  G4double world_sizeZ  = 350*cm;
+  fscintDetails = world_sizeZ/2;
+
+  G4Box* solidWorld =
+          new G4Box("World", 0.5*world_sizeX, 0.5*world_sizeY, 0.5*world_sizeZ);
+  G4LogicalVolume* worldLogical =
+          new G4LogicalVolume(solidWorld, vacuum, "World");
+  G4VPhysicalVolume* worldPhysical =
+          new G4PVPlacement(0, G4ThreeVector(), worldLogical, "World", 0, false, 0, checkOverlaps);
+
+
+  G4double hz = 10*cm;
+  G4double target_posz = 0.5*(-world_sizeZ+1*hz)+1*cm;
+
+  //
+  // Hadron Scintillator
+  //
+
+  G4double inerAng = 0.165; G4double outAng = 0.515;
+  G4double detectTarDist = 3.75*m;
+  G4double detectZ = 0.25*m;
+
+  G4double detectXY = 3*m; //tan(outAng)*detectTarDist*m;
+  G4double detectINXY = 1.4*m; //tan(inerAng)*(2*detectZ+detectTarDist)*m;
+
+  G4cout << detectXY << ' ' << detectINXY << G4endl;
+
+  G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
+
+   // (detectR-target_posz)*sin(rotTheta);
+  G4double detcosR = (detectR-target_posz)+target_posz;
+   // (detectR-target_posz)*cos(rotTheta)+target_posz;
+
+  ConstructScintillatorBox(0.5*detectXY, 0.5*detectINXY, detectZ, detcosR, detectTarDist, detectMat, worldLogical);
+
+  //
+  // World visualization attributes
+  //
+
+  G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
+  visAttributes->SetVisibility(false);
+  worldLogical->SetVisAttributes(visAttributes);
+  fVisAttributes.push_back(visAttributes);
+
+  // return the world physical volume ----------------------------------------
+
+  return worldPhysical;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::ConstructSDandField()
+{
+  // sensitive detectors -----------------------------------------------------
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  G4String SDname;
+
+  // G4VSensitiveDetector* hadCalorimeter
+  //   = new HadCalorimeterSD(SDname="/HadCalorimeter", fnofLayers, fnofLayersZ);
+  // SDman->AddNewDetector(hadCalorimeter);
+  // fscintScintLogical->SetSensitiveDetector(hadCalorimeter);
+
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::ConstructMaterials()
+{
+  G4NistManager* nistManager = G4NistManager::Instance();
+
+  // Air
+  nistManager->FindOrBuildMaterial("G4_AIR");
+
+  nistManager->FindOrBuildMaterial("G4_Al");
+  nistManager->FindOrBuildMaterial("G4_lH2");
+  nistManager->FindOrBuildMaterial("G4_Be");
+  nistManager->FindOrBuildMaterial("G4_Pb");
+  nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
+  G4double z, a, density;
+  // Vacuum
+  new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
+
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::ConstructScintillatorBox(G4double detectXY, G4double detectINXY, G4double detectZ,
+                            G4double detcosR, G4double tardist, std::vector<G4Material*> detectMat, G4LogicalVolume* worldLogical)
+{
+  G4bool checkOverlaps = fcheckOverlaps;
+  G4int nofLayers = fnofLayers;
+  G4Material* polyeth = detectMat[0];
+  G4Material* vacuum = detectMat[1];
+  G4Material* lead = detectMat[2];
+  G4double scintplateThick = (detectZ/fnofLayersZ);
+
+  G4ThreeVector detectplace = G4ThreeVector(0.,0.,detcosR);
+
+  G4VSolid* box1 = new G4Box("Box #1",detectXY,detectXY,detectZ);
+  G4VSolid* box2 = new G4Box("Box #2",detectINXY,detectINXY,2*detectZ);
+
+  G4VSolid* scintSolid = new G4SubtractionSolid("Schield", box1, box2);
+  //G4VSolid* scintCalorimeterSolid = new G4Box("scintCalorimeterBox", detectXY, detectXY, detectZ);
+  G4LogicalVolume* scintLogical
+    = new G4LogicalVolume(scintSolid,vacuum,"scintLogical");
+  new G4PVPlacement(0,detectplace,scintLogical, "scintPhysical",worldLogical,false,0,checkOverlaps);
+
+
+
+  // scintillator calorimeter column
+  G4VSolid* scintColumnSolid
+    = new G4Box("scintColumnBox", detectXY/nofLayers, detectXY,detectZ);
+  G4LogicalVolume* scintColumnLogical
+    = new G4LogicalVolume(scintColumnSolid,vacuum,"scintColumnLogical");
+
+  G4VNestedParameterisation* chamberParam1 =
+    new ChamberParameterisation(nofLayers, detectMat, detectINXY, detectXY, tardist, false);    // final length
+
+  // new G4PVReplica("scintColumnPhysical",scintColumnLogical,
+  //                 scintLogical,kXAxis, nofLayers, 2*detectXY/nofLayers);
+  new G4PVParameterised("scintColumnPhysical",scintColumnLogical,
+                  scintLogical,kYAxis, nofLayers, chamberParam1, checkOverlaps);
+
+
+  // scintillator calorimeter row
+  G4VSolid* scintRowSolid
+    = new G4Box("scintRowBox",detectXY/nofLayers, detectXY/nofLayers, detectZ);
+  G4LogicalVolume* scintRowLogical
+    = new G4LogicalVolume(scintRowSolid,vacuum,"scintRowLogical");
+
+  G4VNestedParameterisation* chamberParam2 =
+    new ChamberParameterisation(nofLayers, detectMat, detectINXY, detectXY, tardist, true);    // final length
+
+  new G4PVParameterised("scintRowPhysical",scintRowLogical,
+                  scintColumnLogical,kYAxis, nofLayers, chamberParam2, checkOverlaps);
+
+
+  // // scintillator scint plates
+  // G4VSolid* scintScintSolid
+  //   = new G4Box("scintScintBox",detectXY/nofLayers, detectXY/nofLayers, scintplateThick);
+  // //G4LogicalVolume* scintScintLogical
+  // fscintScintLogical
+  //   = new G4LogicalVolume(scintScintSolid,polyeth,"scintScintLogical");
+  // new G4PVPlacement(0,G4ThreeVector(0.,0.,detectZ/fnofLayersZ - scintplateThick),fscintScintLogical,
+  //                   "scintScintPhysical",scintCellLogical,
+  //                   false,0,checkOverlaps);
+
+
+  G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
+  visAttributes->SetVisibility(false);
+  scintLogical->SetVisAttributes(visAttributes);
+  scintColumnLogical->SetVisAttributes(visAttributes);
+  // fVisAttributes.push_back(visAttributes);
+  //
+  visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
+  visAttributes->SetVisibility(true);
+  scintRowLogical->SetVisAttributes(visAttributes);
+  // fscintScintLogical->SetVisAttributes(visAttributes);
+
+  // visAttributes = new G4VisAttributes(G4Colour(1.0, 0.5, 0.0));
+  // visAttributes->SetVisibility(true);
+  // scintLeadLogical->SetVisAttributes(visAttributes);
+  // fVisAttributes.push_back(visAttributes);
+
+}
