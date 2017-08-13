@@ -1,0 +1,48 @@
+# Macro file for project
+#
+# To be run preferably in batch, without graphics:
+#
+# Set seeds
+/random/setSeeds 22 33
+#
+#/run/numberOfWorkers 4
+/run/initialize
+#
+# Default kinemtics:
+# electron 100 MeV in direction (0.,0.,1.)
+# 1000 events
+#
+/gun/particle neutron
+/gun/energy 110 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 100 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 90 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 80 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 70 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 60 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 50 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 40 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 30 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 20 MeV
+/run/printProgress 10000
+/run/beamOn 10000
+/gun/energy 10 MeV
+/run/printProgress 10000
+/run/beamOn 10000
