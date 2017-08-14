@@ -91,38 +91,27 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
           G4double ddepth = pos.getZ()-750;
 
-          if ((dtime>66)&&(dtime<85)){
-            analysisManager->FillNtupleDColumn(0, eDep/MeV);
-            analysisManager->FillNtupleDColumn(1, dtime/ns);
-            analysisManager->FillNtupleDColumn(2, dwidth/mm);
-            analysisManager->FillNtupleDColumn(3, ddepth/mm);
-            analysisManager->FillNtupleDColumn(4, theta);
-            analysisManager->FillNtupleIColumn(5, totalHadHit);
-            analysisManager->AddNtupleRow();
-          }
+          // analysisManager->FillNtupleDColumn(0, eDep/MeV);
+          // analysisManager->FillNtupleDColumn(1, dtime/ns);
+          // analysisManager->FillNtupleDColumn(2, dwidth/mm);
+          // analysisManager->FillNtupleDColumn(3, ddepth/mm);
+          // analysisManager->FillNtupleDColumn(4, theta);
+          // analysisManager->FillNtupleIColumn(5, totalHadHit);
+          // analysisManager->AddNtupleRow();
 
-          // if (dtime > 70) {
-          //   if (dtime < 90) analysisManager->FillH1(1, eDep);
-          //   if (dtime < 110) analysisManager->FillH1(2, eDep);
-          //   if (dtime < 125) analysisManager->FillH1(3, eDep);
-          // }
-          // analysisManager->FillH1(7, dwidth);
-          // analysisManager->FillH1(8, ddepth);
-          //
-          // if ((eDep < 19.5)&&(eDep>17)) analysisManager->FillH1(4, dtime);
-          // analysisManager->FillH1(6, parentNo);
-          // analysisManager->FillH2(1, eDep, dtime);
-          // analysisManager->FillH2(2, eDep, theta);
-          // if ((dtime > 70)&&(dtime > 90)) {
-          //   analysisManager->FillH2(3, eDep, theta);
-          //   analysisManager->FillH2(5, eDep, dwidth);
-          // }
-          // if ((eDep < 19.5)&&(eDep>17)) {
-          //   analysisManager->FillH2(4, dtime, theta);
-          //   analysisManager->FillH2(6, dtime, dwidth);
-          // }
-          // analysisManager->FillH2(7, dwidth, ddepth);
-          //
+          analysisManager->FillH1(1, eDep);
+          analysisManager->FillH1(2, dtime);
+          analysisManager->FillH1(3, theta);
+          analysisManager->FillH1(4, dwidth);
+          analysisManager->FillH1(5, ddepth);
+
+          analysisManager->FillH2(1, eDep, dtime);
+          analysisManager->FillH2(2, eDep, theta);
+          analysisManager->FillH2(3, dtime, theta);
+          analysisManager->FillH2(4, dtime, dwidth);
+          analysisManager->FillH2(5, dtime, ddepth);
+
+          G4cout << "Happened!" << G4endl;
           totalHadHit++;
           totalHadE += eDep;
         }

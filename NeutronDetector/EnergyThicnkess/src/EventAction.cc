@@ -76,7 +76,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
-        // G4cout << i << G4endl;
+        // G4cout << nofLayers*nofLayers*nofLayersZ << G4endl;
         HadCalorimeterHit* hit = (*hcHC)[i];
         G4double eDep = hit->GetEdep();
         if (eDep>0.)
@@ -84,7 +84,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
           analysisManager->FillH1(1, eDep);
           totalHadHit++;
           totalHadE += eDep;
-          fRunAction->AddNumber(1);
+          fRunAction->AddNumber(1, eDep);
         }
         // if (p0>0) G4cout << p0<< G4endl;
         fHadCalEdep[i] = totalHadE;

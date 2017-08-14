@@ -69,7 +69,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4Material* vacuum = G4Material::GetMaterial("Galactic");
 
-  G4Material* polyeth = G4Material::GetMaterial("G4_POLYETHYLENE");
+  // G4Material* polyeth = G4Material::GetMaterial("EJ301");
+  G4Material* polyeth = G4Material::GetMaterial("EJ323");
   G4Material* lead = G4Material::GetMaterial("G4_Pb");
 
   std::vector<G4Material*> detectMat(3,polyeth);
@@ -77,12 +78,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   detectMat[2]=lead;
 
   //G4Material* aluminium = G4Material::GetMaterial("Galactic");
-  G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
-  G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
+  // G4Material* tarwall_mat = G4Material::GetMaterial("G4_Al");
+  // G4Material* tarwind_mat = G4Material::GetMaterial("G4_Be");
 
-  std::vector<G4Material*> tarMat(3,vacuum);
-  tarMat[1]=tarwall_mat;
-  tarMat[2]=tarwind_mat;
+  // std::vector<G4Material*> tarMat(3,vacuum);
+  // tarMat[1]=tarwall_mat;
+  // tarMat[2]=tarwind_mat;
 
 
 
@@ -113,7 +114,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4double detectXY = 1*m;
   G4double detectINXY = 0.5000001*m;
-  G4double detectZ = 1.25*m;
+  G4double detectZ = 0.25*m;
+  // G4double detectZ = 1.*m;
 
   G4double schieldthickness = 2*cm;
 
@@ -191,7 +193,6 @@ void DetectorConstruction::ConstructMaterials()
   nistManager->FindOrBuildMaterial("G4_lH2");
   nistManager->FindOrBuildMaterial("G4_Be");
   nistManager->FindOrBuildMaterial("G4_Pb");
-  nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
   G4double z, a, aH, aC, density, hcratio, invhcr;
   G4double fractionmassH, fractionmassC;
   // Vacuum

@@ -69,8 +69,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4Material* vacuum = G4Material::GetMaterial("Galactic");
 
-  G4Material* polyeth = G4Material::GetMaterial("G4_POLYETHYLENE");
-  G4Material* lead = G4Material::GetMaterial("G4_Pb");
+  G4Material* polyeth = G4Material::GetMaterial("EJ323");
+  // G4Material* lead = G4Material::GetMaterial("G4_Pb");
+  G4Material* lead = vacuum;
 
   std::vector<G4Material*> detectMat(3,polyeth);
   detectMat[1]=vacuum;
@@ -93,7 +94,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4bool checkOverlaps = fcheckOverlaps;
   G4double world_sizeX = 300*cm;
   G4double world_sizeY = 300*cm;
-  G4double world_sizeZ  = 350*cm;
+  G4double world_sizeZ  = 550*cm;
   fscintDetails = world_sizeZ/2;
 
   G4Box* solidWorld =
@@ -111,13 +112,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Hadron Scintillator
   //
 
-  G4double detectXY = 1*m;
-  G4double detectINXY = 0.5000001*m;
+  G4double detectXY = 1.5*m;
+  G4double detectINXY = 0.7*m;
   G4double detectZ = 0.25*m;
 
-  G4double schieldthickness = 2*cm;
+  G4double schieldthickness = 0.01*cm;
 
-  G4double detectTarDist = 2.5*m;
+  G4double detectTarDist = 3.75*m;
   G4double detectR = -0.5*world_sizeZ+detectTarDist+detectZ;
   // fscintDetails = detectR - detectZ;
   G4double detsinR = 0;
@@ -191,10 +192,33 @@ void DetectorConstruction::ConstructMaterials()
   nistManager->FindOrBuildMaterial("G4_lH2");
   nistManager->FindOrBuildMaterial("G4_Be");
   nistManager->FindOrBuildMaterial("G4_Pb");
-  nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
-  G4double z, a, density;
+  G4double z, a, aH, aC, density, hcratio, invhcr;
+  G4double fractionmassH, fractionmassC;
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
+
+  aH = 1.01*g/mole; aC = 12.01*g/mole;
+  G4Element* elH  = new G4Element("Hydrogen", "H", z= 1., aH);
+  G4Element* elC  = new G4Element("Carbon"  , "C", z= 6., aC);
+
+  // Liquid EJ301
+  density= 0.874*g/cm3; hcratio = 1.212;
+  invhcr = 1/hcratio;
+  fractionmassH = (hcratio*aH)/(hcratio*aH+aC);
+  fractionmassC = (invhcr*aC)/(invhcr*aC+aH);
+  G4Material* mat_ej301 = new G4Material("EJ301", density, 2);
+  // mat_ej301->AddElement(elH, fractionmassH*perCent);
+  mat_ej301->AddElement(elH, fractionmassH);
+  mat_ej301->AddElement(elC, fractionmassC);
+
+  // Plastic EJ323
+  density= 1.032*g/cm3; hcratio = 1.102;
+  invhcr = 1/hcratio;
+  fractionmassH = (hcratio*aH)/(hcratio*aH+aC);
+  fractionmassC = (invhcr*aC)/(invhcr*aC+aH);
+  G4Material* mat_ej323 = new G4Material("EJ323", density, 2);
+  mat_ej323->AddElement(elH, fractionmassH);
+  mat_ej323->AddElement(elC, fractionmassC);
 
 }
 

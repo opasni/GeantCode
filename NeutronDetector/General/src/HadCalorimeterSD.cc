@@ -59,6 +59,7 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
     G4double edep = step->GetTotalEnergyDeposit();
     if (edep==0.) return true;
+    G4cout << edep << G4endl;
 
     G4double timeglob = step->GetTrack()->GetGlobalTime();
     G4ThreeVector vertpos = step->GetTrack()->GetPosition();
@@ -85,25 +86,26 @@ G4bool HadCalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     // We calculate the distance the particle traveled through the air, so that we can substitute from total lenght
 
     G4double removedist;
+    G4double detIN = 700*mm;
     if (fFirst==0){
       fFirst=1;
       xMean = vertpos[0];
       yMean = vertpos[1];
       removedist = 0;
     }
-    else if (((xMean<-499)&&(vertpos[0]<-499))||((xMean>499)&&(vertpos[0]>499))) removedist = 0;
-    else if (((yMean<-499)&&(vertpos[1]<-499))||((yMean>499)&&(vertpos[1]>499))) removedist = 0;
+    else if (((xMean<-(detIN-1))&&(vertpos[0]<-(detIN-1)))||((xMean>(detIN-1))&&(vertpos[0]>(detIN-1)))) removedist = 0;
+    else if (((yMean<-(detIN-1))&&(vertpos[1]<-(detIN-1)))||((yMean>(detIN-1))&&(vertpos[1]>(detIN-1)))) removedist = 0;
     else {
       G4double k = (vertpos[1]-yMean)/(vertpos[0]-xMean);
       G4double n = (yMean*vertpos[0]-xMean*vertpos[1])/(vertpos[0]-xMean);
-      G4double p1x=-1000;
+      G4double p1x=-(2*detIN);
       G4double p1y, p2x,p2y;
       G4double x,y;
-      y=k*(-500)+n;if ((y>-500)&&(y<500)) {p1x=-500;p1y=y;}
-      y=k*(500)+n;if ((y>-500)&&(y<500)) {if (p1x==-1000) {p1x=500;p1y=y;} else {p2x=500;p2y=y;}}
-      x=(-500-n)/k;if ((x>-500)&&(x<500)) {if (p1x==-1000) {p1x=x;p1y=-500;} else {p2x=x;p2y=-500;}}
-      x=(500-n)/k;if ((x>-500)&&(x<500)) {if (p1x==-1000) {p1x=-x;p1y=500;} else {p2x=x;p2y=500;}}
-      if (p1x==-1000) removedist = 0;
+      y=k*(-detIN)+n;if ((y>-detIN)&&(y<detIN)) {p1x=-detIN;p1y=y;}
+      y=k*(detIN)+n;if ((y>-detIN)&&(y<detIN)) {if (p1x==-(2*detIN)) {p1x=detIN;p1y=y;} else {p2x=detIN;p2y=y;}}
+      x=(-detIN-n)/k;if ((x>-detIN)&&(x<detIN)) {if (p1x==-(2*detIN)) {p1x=x;p1y=-detIN;} else {p2x=x;p2y=-detIN;}}
+      x=(detIN-n)/k;if ((x>-detIN)&&(x<detIN)) {if (p1x==-(2*detIN)) {p1x=-x;p1y=detIN;} else {p2x=x;p2y=detIN;}}
+      if (p1x==-(2*detIN)) removedist = 0;
       else removedist = sqrt(pow(p1x-p2x,2)+pow(p1y-p2y,2));
       // G4double dist = sqrt(pow(xMean-vertpos[0],2)+pow(yMean-vertpos[1],2));
       // if (dist<removedist) G4cout << xMean << ' ' << yMean << ' ' << vertpos[0] << ' ' << vertpos[1] << ' ' << k <<  ' ' << n << ' ' << dist <<  ' ' << removedist << G4endl;

@@ -22,16 +22,18 @@ class RunAction : public G4UserRunAction
     virtual void BeginOfRunAction(const G4Run*);
     virtual void   EndOfRunAction(const G4Run*);
 
-    void AddNumber(G4int num);
+    void AddNumber(G4int num, G4double eDep);
 
   private:
 
     G4int fNumber;
+    G4double fEDep;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-inline void RunAction::AddNumber(G4int num) {
+inline void RunAction::AddNumber(G4int num, G4double eDep) {
+  fEDep += eDep;
   fNumber += num;
 }
 

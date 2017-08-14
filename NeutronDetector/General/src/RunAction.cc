@@ -20,14 +20,26 @@ RunAction::RunAction(EventAction* eventAction)
   analysisManager->SetFirstHistoId(1);
   analysisManager->SetFileName("Project");
   //
-  analysisManager->CreateNtuple("Hits", "Hits");
-  analysisManager->CreateNtupleDColumn("Energy"); // column Id = 1
-  analysisManager->CreateNtupleDColumn("Time"); // column Id = 2
-  analysisManager->CreateNtupleDColumn("Width"); // column Id = 4
-  analysisManager->CreateNtupleDColumn("Depth"); // column Id = 4
-  analysisManager->CreateNtupleDColumn("Theta"); // column Id = 4
-  analysisManager->CreateNtupleIColumn("Hit"); // column Id = 4
-  analysisManager->FinishNtuple();
+  // analysisManager->CreateNtuple("Hits", "Hits");
+  // analysisManager->CreateNtupleDColumn("Energy"); // column Id = 1
+  // analysisManager->CreateNtupleDColumn("Time"); // column Id = 2
+  // analysisManager->CreateNtupleDColumn("Width"); // column Id = 4
+  // analysisManager->CreateNtupleDColumn("Depth"); // column Id = 4
+  // analysisManager->CreateNtupleDColumn("Theta"); // column Id = 4
+  // analysisManager->CreateNtupleIColumn("Hit"); // column Id = 4
+  // analysisManager->FinishNtuple();
+
+  analysisManager->CreateH1("Energy","", 100, 0., 110*MeV);
+  analysisManager->CreateH1("Time","", 60, 0., 125*ns);
+  analysisManager->CreateH1("Theta","", 30, 0.165, 0.515);
+  analysisManager->CreateH1("Width","", 80, 10, 400);
+  analysisManager->CreateH1("Depth","", 80, 0, 500);
+
+  analysisManager->CreateH2("EnergyTime","Depth of signal", 100, 0., 110*MeV, 60, 0., 125*ns);
+  analysisManager->CreateH2("EnergyTheta","Depth of signal", 100, 0., 110*MeV, 30, 0.165, 0.515);
+  analysisManager->CreateH2("TimeTheta","Depth of signal", 60, 0., 125*ns, 30, 0.165, 0.515);
+  analysisManager->CreateH2("TimeWidth","Depth of signal", 60, 0., 125*ns, 80, 10, 400);
+  analysisManager->CreateH2("TimeDepth","Depth of signal", 60, 0., 125*ns, 80, 0, 500);
 
   // analysisManager->CreateH1("Energy60","Energy", 100, 0., 110*MeV);
   // analysisManager->CreateH1("Energy75","Energy", 100, 0., 110*MeV);
