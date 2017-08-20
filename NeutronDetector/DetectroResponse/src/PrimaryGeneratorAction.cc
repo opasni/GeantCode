@@ -20,6 +20,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(G4String particle)
    fParticleGun1(0),
   //  fParticleDef(particle),
    fParticleDef("gamma"),
+  //  fParticleDef("neutronIB"),
    cutVal(1)
 {
   G4int nofParticles1 = 1;

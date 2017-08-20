@@ -71,6 +71,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
     // HCEnergy
     G4int totalHadHit = 0;
     G4double totalHadE = 0.;
+    G4double totalWidth = 0.;
+    G4double totalDepth = 0.;
 
     for (G4int i=0;i<nofLayers*nofLayers*nofLayersZ;i++)
     {
@@ -89,15 +91,17 @@ void EventAction::EndOfEventAction(const G4Event* event)
           fPos.push_back(dwidth);
           G4double theta = atan(sqrt(pos.getX()*pos.getX()+pos.getY()*pos.getY())/(fscintDetails+pos.getZ()));
 
-          G4double ddepth = pos.getZ()-750;
-
-          // analysisManager->FillNtupleDColumn(0, eDep/MeV);
-          // analysisManager->FillNtupleDColumn(1, dtime/ns);
-          // analysisManager->FillNtupleDColumn(2, dwidth/mm);
-          // analysisManager->FillNtupleDColumn(3, ddepth/mm);
-          // analysisManager->FillNtupleDColumn(4, theta);
-          // analysisManager->FillNtupleIColumn(5, totalHadHit);
-          // analysisManager->AddNtupleRow();
+          G4double ddepth = pos.getZ()-1*m;
+          // G4cout << ddepth << G4endl;
+          if ((eDep>15*MeV)&&(dtime>60*ns)){
+            analysisManager->FillNtupleDColumn(0, eDep/MeV);
+            analysisManager->FillNtupleDColumn(1, dtime/ns);
+            analysisManager->FillNtupleDColumn(2, dwidth/mm);
+            analysisManager->FillNtupleDColumn(3, ddepth/mm);
+            analysisManager->FillNtupleDColumn(4, theta);
+            analysisManager->FillNtupleIColumn(5, totalHadHit);
+            analysisManager->AddNtupleRow();
+          }
 
           analysisManager->FillH1(1, eDep);
           analysisManager->FillH1(2, dtime);
@@ -112,13 +116,33 @@ void EventAction::EndOfEventAction(const G4Event* event)
           analysisManager->FillH2(4, dtime, dwidth);
           analysisManager->FillH2(5, dtime, ddepth);
 
+          analysisManager->FillH2(9, eDep, dwidth);
+          analysisManager->FillH2(10, eDep, ddepth);
+
+          if ((eDep<20*MeV)&&(eDep>15*MeV)){
+            analysisManager->FillH2(11, ddepth, dwidth);
+            if ((dtime<80*ns)&&(dtime>60*ns)){
+              analysisManager->FillH2(12, ddepth, dwidth);
+            }
+          }
+          // analysisManager->FillH2(6, dwidth, ddepth);
+
           totalHadHit++;
           totalHadE += eDep;
+          totalDepth += ddepth;
+          totalWidth += dwidth;
         }
         // if (p0>0) G4cout << p0<< G4endl;
         fHadCalEdep[i] = totalHadE;
         // if (totalHadHit!=0) {
-          // analysisManager->FillH1(5, totalHadHit);
+          analysisManager->FillH1(7, totalWidth/totalHadHit);
+          analysisManager->FillH1(8, totalDepth/totalHadHit);
+          analysisManager->FillH1(9, totalHadE/totalHadHit);
+          analysisManager->FillH1(10, totalHadE);
+
+          analysisManager->FillH2(6, totalHadE, totalWidth/totalHadHit);
+          analysisManager->FillH2(7, totalHadE, totalDepth/totalHadHit);
+          analysisManager->FillH2(8, totalWidth/totalHadHit, totalDepth/totalHadHit);
         // }
     }
 

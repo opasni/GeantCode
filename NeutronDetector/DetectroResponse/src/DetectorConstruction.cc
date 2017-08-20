@@ -45,7 +45,7 @@ DetectorConstruction::DetectorConstruction()
   fscintScintLogical(0),
   fVisAttributes(),
   fnofLayers(20),
-  fnofLayersZ(3)
+  fnofLayersZ(1)
 {
 }
 
@@ -297,7 +297,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
 
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
   visAttributes->SetVisibility(false);
-  scintLogical->SetVisAttributes(visAttributes);
+  // scintLogical->SetVisAttributes(visAttributes);
   scintColumnLogical->SetVisAttributes(visAttributes);
   scintRowLogical->SetVisAttributes(visAttributes);
   scintCellLogical->SetVisAttributes(visAttributes);
@@ -305,6 +305,7 @@ void DetectorConstruction::ConstructScintillator(G4double detectXY, G4double det
 
   visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
   visAttributes->SetVisibility(true);
+  scintLogical->SetVisAttributes(visAttributes);
   fscintScintLogical->SetVisAttributes(visAttributes);
 
   visAttributes = new G4VisAttributes(G4Colour(1.0, 0.5, 0.0));
