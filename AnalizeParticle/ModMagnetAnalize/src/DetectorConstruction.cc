@@ -1,5 +1,5 @@
 #include "DetectorConstruction.hh"
-//#include "Parameterisation.hh"
+#include "MagneticField.hh"
 //#include "ParameterisationPHI.hh"
 
 #include "G4Material.hh"
@@ -9,6 +9,7 @@
 #include "G4Box.hh"
 #include "G4Sphere.hh"
 #include "G4Tubs.hh"
+#include "G4Cons.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
@@ -22,7 +23,9 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
-#include "G4SubtractionSolid.hh"
+
+#include "G4UserLimits.hh"
+#include "G4SDManager.hh"
 
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
@@ -33,12 +36,18 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction(G4double shield)
+G4ThreadLocal MagneticField* DetectorConstruction::fMagneticField = 0;
+G4ThreadLocal G4FieldManager* DetectorConstruction::fFieldMgr = 0;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+DetectorConstruction::DetectorConstruction(G4double magstr)
  : G4VUserDetectorConstruction(),
+   fMessenger(0),
    fAbsorberPV(0),
-   fKillerPV(0),
+   fMagneticLogical(0),
    fCheckOverlaps(true),
-   fShieldThick(shield)
+   fMagfieldstr(magstr)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -67,8 +76,9 @@ void DetectorConstruction::DefineMaterials()
   nistManager->FindOrBuildMaterial("G4_Al");
   nistManager->FindOrBuildMaterial("G4_lH2");
   nistManager->FindOrBuildMaterial("G4_Be");
-  nistManager->FindOrBuildMaterial("G4_Pb");
+  nistManager->FindOrBuildMaterial("G4_POLYETHYLENE");
   G4double z, a, density;
+  G4int ncomponents, natoms;
   // Vacuum
   new G4Material("Galactic", z=1., a=1.01*g/mole, density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
 
@@ -84,18 +94,13 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4Material* defaultMaterial = G4Material::GetMaterial("Galactic");
   G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
   // G4Material* lH2 = G4Material::GetMaterial("G4_lH2");
-  G4Material* lead = G4Material::GetMaterial("G4_Pb");
   G4Material* tarwall_mat;
   G4Material* tarwind_mat;
-  // if (ftarmat == "yes") {
+
   tarwall_mat = G4Material::GetMaterial("G4_Al");
   tarwind_mat = G4Material::GetMaterial("G4_Be");
-  // }
-  // else {
-  //   tarwall_mat = G4Material::GetMaterial("Galactic");
-  //   tarwind_mat = G4Material::GetMaterial("Galactic");
-  // }
-  //G4Material* scint_mat = G4Material::GetMaterial("G4_POLYETHYLENE");
+
+    //G4Material* scint_mat = G4Material::GetMaterial("G4_POLYETHYLENE");
   G4Material* scint_mat = G4Material::GetMaterial("Galactic");
 
   //
@@ -162,8 +167,8 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   G4ThreeVector scint_pos = G4ThreeVector(0, 0, 0);
 
-  G4double scint_Rmin = 375*cm;
-  G4double scint_Rmax = 395*cm;
+  G4double scint_Rmin = 250*cm;
+  G4double scint_Rmax = 255*cm;
   G4double scint_PhiS = 0;
   G4double scint_PhiD = 2*(pi);
   G4double scint_ThetaS = 0;
@@ -177,65 +182,44 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   G4LogicalVolume* logicscintP = new G4LogicalVolume(solidscintP, scint_mat, "Scintillator Part");
   new G4PVPlacement(0, scint_pos, logicscintP, "Scintillator PArt", logicWorld, false, 0, false);
 
+    //
+    // Magnet
+    //
 
-  //
-  // Killer electron
-  //
+  G4double magZR = 0.5*m;
+  G4double magTarDist = 0.1*m;
+  G4double magR = 0.5*magZR+0.5*hz+magTarDist;
 
-  G4ThreeVector killer_pos = G4ThreeVector(0, 0, 0);
+  G4ThreeVector magplace = G4ThreeVector(0.,0.,magR);
+  G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
+  fieldRotMag->rotateX(pi/2);
 
-  G4double killer_Rmin = 20*cm;
-  G4double killer_Rmax = 30*cm;
-  G4double killer_PhiS = 0;
-  G4double killer_PhiD = 2*(pi);
-  G4double killer_ThetaS = 0;
-  G4double killer_ThetaD = pi;
+  Box Solid magnet
+  G4VSolid* magneticSolid
+    = new G4Box("Magnet", 0.5*magZR, 0.5*magZR, 0.5*magZR);
 
-  G4Sphere* solidkiller = new G4Sphere("Killer Mother", killer_Rmin, killer_Rmax, killer_PhiS, killer_PhiD, killer_ThetaS, killer_ThetaD);
-  G4LogicalVolume* logickiller = new G4LogicalVolume(solidkiller, scint_mat, "Killer Mother");
-  fKillerPV = new G4PVPlacement(0, killer_pos, logickiller, "Killer Mother", logicWorld,
-                                false, 0, fCheckOverlaps);
+  // Cons solid magnet
+  G4double magR1Min, magR1Max, magR2Min, magR2Max;
+  G4double angMin = 0.13;
+  G4double angMax = 0.515;
+  // magR1Min = magTarDist*tan(angMin); magR2Min = (magTarDist+magZR)*tan(angMin);
+  magR2Max = (magTarDist+hz+magZR)*tan(angMax); magR1Max = magR2Max;
+  G4cout << magR2Max << G4endl;
+  // G4Cons* magneticSolid
+  //   = new G4Cons("Magnet", magR1Min, magR1Max, magR2Min, magR2Max, 0.5*magZR, startAngle, spanningAngle);
 
-  //
-  // Schield
-  //
-
-
-  G4double scheld_Z = 1*m;
-  G4double scheld_thick = fShieldThick*cm;
-
-  G4ThreeVector scheld_pos = G4ThreeVector(0, 0, scheld_Z+0.5*scheld_thick+0.5*hz);
-
-  G4double schieldINXY = tan(0.165)*(scheld_Z+scheld_thick+0.5*hz);
-  // G4double schieldINXY = 0;
-  // G4double schieldXY = tan(0.515)*scheld_Z/sqrt(2);
-  G4double schieldXY = tan(0.515)*(scheld_Z+0.5*hz);
-
-  G4cout << schieldINXY/cm << ' ' << schieldXY/cm << G4endl;
-
-  // G4VSolid* boxS1 = new G4Box("BoxS #1",schieldXY,schieldXY,0.5*scheld_thick);
-  // G4VSolid* boxS2 = new G4Box("BoxS #2",schieldINXY,schieldINXY,0.5*scheld_thick);
-  //
-  // G4VSolid* schieldSolid = new G4SubtractionSolid("Schield", boxS1, boxS2);
-  // G4LogicalVolume* schieldLogical = new G4LogicalVolume(schieldSolid,lead,"schieldLogical");
-  // new G4PVPlacement(0, scheld_pos, schieldLogical, "schieldPhysical", logicWorld,
-  //                   false,0,fCheckOverlaps);
-
-  G4Tubs* schieldSolid
-    = new G4Tubs("schieldSolid", schieldINXY, schieldXY, 0.5*scheld_thick, startAngle, spanningAngle);
-  G4LogicalVolume* schieldLogical = new G4LogicalVolume(schieldSolid,lead,"schieldLogical");
-  new G4PVPlacement(0, scheld_pos, schieldLogical, "schieldPhysical", logicWorld,
+  fMagneticLogical = new G4LogicalVolume(magneticSolid, defaultMaterial, "magneticLogical");
+  new G4PVPlacement(0,magplace,fMagneticLogical,
+                    "magneticPhysical",logicWorld,
                     false,0,fCheckOverlaps);
 
-  //
-  // Visualization attributes
-  //
+  // set step limit in tube with magnetic field
+  G4UserLimits* userLimits = new G4UserLimits(0.1*m);
+  fMagneticLogical->SetUserLimits(userLimits);
 
+  // G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(0.0,1.0,0.0));   // LightGray
   G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(0.0,0.33,0.0,1));
   logicscintP->SetVisAttributes(visAttributes);
-
-  visAttributes = new G4VisAttributes(G4Colour(0.333333,0,0.498039,1));
-  schieldLogical->SetVisAttributes(visAttributes);
 
   visAttributes = new G4VisAttributes(G4Colour(1.0,0.0,0.0,1));
   logictar->SetVisAttributes(visAttributes);
@@ -243,13 +227,15 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   logictarlayer2->SetVisAttributes(visAttributes);
   logictarlayer3->SetVisAttributes(visAttributes);
 
-  logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
-  logicscint->SetVisAttributes(G4VisAttributes::Invisible);
-  logickiller->SetVisAttributes(G4VisAttributes::Invisible);
 
-  // G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
-  // simpleBoxVisAtt->SetVisibility(true);
-  // logicscint->SetVisAttributes(simpleBoxVisAtt);
+  //
+  // Visualization attributes
+  //
+  logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
+
+  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
+  simpleBoxVisAtt->SetVisibility(false);
+  logicscint->SetVisAttributes(simpleBoxVisAtt);
 
   //
   // Always return the physical World
@@ -257,3 +243,25 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   return physWorld;
 }
+
+void DetectorConstruction::ConstructSDandField()
+{
+  // sensitive detectors -----------------------------------------------------
+  // G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  // G4String SDname;
+
+   // magnetic field ----------------------------------------------------------
+  fMagneticField = new MagneticField();
+  fMagneticField->SetField(fMagfieldstr*tesla);
+  fFieldMgr = new G4FieldManager();
+  fFieldMgr->SetDetectorField(fMagneticField);
+  fFieldMgr->CreateChordFinder(fMagneticField);
+  G4bool forceToAllDaughters = true;
+  fMagneticLogical->SetFieldManager(fFieldMgr, forceToAllDaughters);
+
+  // Register the field and its manager for deleting
+  G4AutoDelete::Register(fMagneticField);
+  G4AutoDelete::Register(fFieldMgr);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

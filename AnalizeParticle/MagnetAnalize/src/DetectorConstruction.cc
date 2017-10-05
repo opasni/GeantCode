@@ -9,6 +9,7 @@
 #include "G4Box.hh"
 #include "G4Sphere.hh"
 #include "G4Tubs.hh"
+#include "G4Cons.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
@@ -186,17 +187,28 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
     //
 
   G4double magZR = 0.4*m;
-  G4double magR = 0.5*magZR+hz;
+  G4double magTarDist = 0.1*m;
+  G4double magR = 0.5*magZR+0.5*hz+magTarDist;
 
   G4ThreeVector magplace = G4ThreeVector(0.,0.,magR);
   G4RotationMatrix* fieldRotMag = new G4RotationMatrix();
   fieldRotMag->rotateX(pi/2);
 
-  //  = new G4Tubs("magneticTubs",0.,magZR,magZR,0.,2*pi);
+  // Box Solid magnet
   G4VSolid* magneticSolid
-    = new G4Box("World", 0.5*magZR, 0.5*magZR, 0.5*magZR);
+    = new G4Box("Magnet", 0.5*magZR, 0.5*magZR, 0.5*magZR);
+
+  // Cons solid magnet
+  // G4double magR1Min, magR1Max, magR2Min, magR2Max;
+  // G4double angMin = 0.162;
+  // G4double angMax = 0.515;
+  // magR1Min = magTarDist*tan(angMin); magR2Min = (magTarDist+magZR)*tan(angMin);
+  // magR2Max = (magTarDist+hz+magZR)*tan(angMax); magR1Max = magR2Max;
+  // G4Cons* magneticSolid
+  //   = new G4Cons("Magnet", magR1Min, magR1Max, magR2Min, magR2Max, 0.5*magZR, startAngle, spanningAngle);
+
   fMagneticLogical = new G4LogicalVolume(magneticSolid, defaultMaterial, "magneticLogical");
-  new G4PVPlacement(fieldRotMag,magplace,fMagneticLogical,
+  new G4PVPlacement(0,magplace,fMagneticLogical,
                     "magneticPhysical",logicWorld,
                     false,0,fCheckOverlaps);
 
