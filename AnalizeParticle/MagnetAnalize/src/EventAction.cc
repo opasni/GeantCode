@@ -64,6 +64,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
     else if (fname[i]=="neutron") {n++; ntupleID = 3;continue;}
 
     if ((fTheta[i]<0.515)&&(0.165<fTheta[i])){
+      if (ntupleID==1) G4cout << "Elektron"<< G4endl;
+      if (ntupleID==2) G4cout << "Proton"<< G4endl;
       analysisManager->FillNtupleDColumn(ntupleID, 0, fenergy[i]/MeV);
       analysisManager->FillNtupleDColumn(ntupleID, 1, ftime[i]);
       analysisManager->FillNtupleDColumn(ntupleID, 2, fPhi[i]);

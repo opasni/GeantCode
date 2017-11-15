@@ -20,7 +20,7 @@ SteppingAction::SteppingAction(
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SteppingAction::~SteppingAction()
-{ 
+{
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -28,13 +28,13 @@ SteppingAction::~SteppingAction()
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
 // Collect energy and track length step by step
-  
+
   // G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
   // if (( name == "neutron") || (name == "e-")) {
   //       parentID = step->GetTrack()->GetParentID();
   //       G4String process;
   //       if (parentID != 0) process = step->GetTrack()->GetCreatorProcess()->GetProcessName();
-  //       if ((process == "eIoni") && (process != "") && (process != "compt") && (process != "phot") && (process != "conv") && (name != "neutron")) 
+  //       if ((process == "eIoni") && (process != "") && (process != "compt") && (process != "phot") && (process != "conv") && (name != "neutron"))
   //               G4cout << "Name: " << name << " made by: " << process << G4endl;
 
 // get volume of the current step
@@ -42,7 +42,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4VPhysicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
   if (volume == fDetConstruction->GetAbsorberPV()) {
       G4String name = step->GetTrack()->GetDefinition()->GetParticleName();
-      if (( name == "proton") || ( name == "neutron") || (name == "e-") || (name == "gamma")) {
+      if (( name == "proton") || (name == "e-")) {
         //G4cout << "Neutron!! " << G4endl;
         G4ThreeVector pos = step->GetTrack()->GetPosition();
         G4double energy = step->GetTrack()->GetKineticEnergy();
@@ -54,16 +54,16 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         if (parentID != 0) process = step->GetTrack()->GetCreatorProcess()->GetProcessName();
         if  (process == "") process = "Gun";
         fEventAction->AddData(Phi,Theta, energy, timeglob, parentID, name, process);
-        // if ((process != "eIoni") && (process != "") && (process != "compt") && (process != "phot") 
-        //                          && (process != "conv") && (name != "neutron")) 
+        // if ((process != "eIoni") && (process != "") && (process != "compt") && (process != "phot")
+        //                          && (process != "conv") && (name != "neutron"))
         //         G4cout << "Name: " << name << " made by: " << process << G4endl;
-        //if ((process == "photonNuclear")) 
+        //if ((process == "photonNuclear"))
         //        G4cout << "Name: " << name << " made by: " << process << G4endl;
-        //else 
+        //else
       }
       step->GetTrack()->SetTrackStatus(fStopAndKill);
-  
-  } //else if ( name == "proton" && volume == fDetConstruction->GetTargetPV() ) { 
+
+  } //else if ( name == "proton" && volume == fDetConstruction->GetTargetPV() ) {
     //fEventAction->AddProto();
   //}
 }

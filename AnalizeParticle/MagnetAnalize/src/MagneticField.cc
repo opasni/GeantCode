@@ -22,11 +22,11 @@ MagneticField::~MagneticField()
 
 void MagneticField::GetFieldValue(const G4double Point[4],double *bField) const
 {
-    // G4double norm = sqrt(Point[0]*Point[0]+Point[1]*Point[1]);
-    bField[0] = 0.;
-    // bField[0] = fBy*Point[0]/norm;
-    bField[1] = fBy;
-    // bField[1] = fBy*Point[1]/norm;
+    G4double norm = sqrt(Point[0]*Point[0]+Point[1]*Point[1]);
+    // bField[0] = 0.;
+    bField[0] = -fBy*Point[1]/norm;
+    // bField[1] = fBy;
+    bField[1] = fBy*Point[0]/norm;
     bField[2] = 0.;
     // bField[2] = fBy;
 }

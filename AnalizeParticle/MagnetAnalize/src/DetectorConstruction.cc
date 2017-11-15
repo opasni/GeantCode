@@ -195,17 +195,17 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   fieldRotMag->rotateX(pi/2);
 
   // Box Solid magnet
-  G4VSolid* magneticSolid
-    = new G4Box("Magnet", 0.5*magZR, 0.5*magZR, 0.5*magZR);
+  // G4VSolid* magneticSolid
+  //   = new G4Box("Magnet", 0.5*magZR, 0.5*magZR, 0.5*magZR);
 
   // Cons solid magnet
-  // G4double magR1Min, magR1Max, magR2Min, magR2Max;
-  // G4double angMin = 0.162;
-  // G4double angMax = 0.515;
-  // magR1Min = magTarDist*tan(angMin); magR2Min = (magTarDist+magZR)*tan(angMin);
-  // magR2Max = (magTarDist+hz+magZR)*tan(angMax); magR1Max = magR2Max;
-  // G4Cons* magneticSolid
-  //   = new G4Cons("Magnet", magR1Min, magR1Max, magR2Min, magR2Max, 0.5*magZR, startAngle, spanningAngle);
+  G4double magR1Min, magR1Max, magR2Min, magR2Max;
+  G4double angMin = 0.162;
+  G4double angMax = 0.515;
+  magR1Min = magTarDist*tan(angMin); magR2Min = (magTarDist+magZR)*tan(angMin);
+  magR2Max = (magTarDist+hz+magZR)*tan(angMax); magR1Max = magR2Max;
+  G4Cons* magneticSolid
+    = new G4Cons("Magnet", magR1Min, magR1Max, magR2Min, magR2Max, 0.5*magZR, startAngle, spanningAngle);
 
   fMagneticLogical = new G4LogicalVolume(magneticSolid, defaultMaterial, "magneticLogical");
   new G4PVPlacement(0,magplace,fMagneticLogical,
